@@ -1,0 +1,1586 @@
+[
+  {
+    "session_id": "S-AMT-251564",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹4,612.05 exceeds the mandate cap of ₹4,103.07.",
+    "offending_items": [
+      "SKU-29885"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-113818",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹2,381.71 exceeds the mandate cap of ₹2,049.78.",
+    "offending_items": [
+      "SKU-31988"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-749706",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹4,065.67 plus this session's ₹3,711.92 = ₹7,777.59, over the cumulative cap of ₹4,065.67.",
+    "offending_items": [
+      "SKU-70265"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-902508",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹8,294.60 plus this session's ₹8,056.61 = ₹16,351.21, over the cumulative cap of ₹8,294.60.",
+    "offending_items": [
+      "SKU-21684"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-818203",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹6,035.22 exceeds the mandate cap of ₹5,694.02.",
+    "offending_items": [
+      "SKU-11766"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-742154",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹2,071.49 exceeds the mandate cap of ₹1,743.21.",
+    "offending_items": [
+      "SKU-70810"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-148647",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹4,547.53 plus this session's ₹4,256.44 = ₹8,803.97, over the cumulative cap of ₹4,547.53.",
+    "offending_items": [
+      "SKU-30545"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-971763",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹3,445.53 exceeds the mandate cap of ₹3,266.37.",
+    "offending_items": [
+      "SKU-81574"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-733321",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['apparel'] are not in the mandate's allowed categories ['groceries'].",
+    "offending_items": [
+      "SKU-28547"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-584253",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹1,977.50 exceeds the mandate cap of ₹1,695.30.",
+    "offending_items": [
+      "SKU-61966"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-621142",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹2,453.77 plus this session's ₹2,290.95 = ₹4,744.72, over the cumulative cap of ₹2,453.77.",
+    "offending_items": [
+      "SKU-74463"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-374083",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹4,596.88 exceeds the mandate cap of ₹4,121.01.",
+    "offending_items": [
+      "SKU-67552"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-611630",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹7,403.32 exceeds the mandate cap of ₹7,246.10.",
+    "offending_items": [
+      "SKU-56941"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-609192",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-6542113' was already used by session S-ORG-794575. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-22631"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-269079",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-4552802' was already used by session S-ORG-551910. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-95974"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-427770",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹7,968.10 plus this session's ₹7,699.71 = ₹15,667.81, over the cumulative cap of ₹7,968.10.",
+    "offending_items": [
+      "SKU-25891"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-830187",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹4,750.26 exceeds the mandate cap of ₹4,346.68.",
+    "offending_items": [
+      "SKU-46294"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-166049",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-2244387' was already used by session S-ORG-127561. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-74418"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-369692",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['flight'] are not in the mandate's allowed categories ['electronics'].",
+    "offending_items": [
+      "SKU-81750"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-452145",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹1,224.44 plus this session's ₹879.46 = ₹2,103.90, over the cumulative cap of ₹1,224.44.",
+    "offending_items": [
+      "SKU-99006"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-408665",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹1,649.65 exceeds the mandate cap of ₹1,428.94.",
+    "offending_items": [
+      "SKU-65005"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-889875",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹4,323.72 exceeds the mandate cap of ₹3,823.70.",
+    "offending_items": [
+      "SKU-44281"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-668638",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹4,607.83 exceeds the mandate cap of ₹4,030.57.",
+    "offending_items": [
+      "SKU-73750"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-806854",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹7,492.84 plus this session's ₹7,359.53 = ₹14,852.37, over the cumulative cap of ₹7,492.84.",
+    "offending_items": [
+      "SKU-60990"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-539848",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹2,552.64 plus this session's ₹2,290.81 = ₹4,843.45, over the cumulative cap of ₹2,552.64.",
+    "offending_items": [
+      "SKU-53960"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-475362",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹2,805.32 exceeds the mandate cap of ₹2,405.80.",
+    "offending_items": [
+      "SKU-19624"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-843711",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['electronics'] are not in the mandate's allowed categories ['groceries'].",
+    "offending_items": [
+      "SKU-86686"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-407431",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹6,669.09 exceeds the mandate cap of ₹6,416.10.",
+    "offending_items": [
+      "SKU-43114"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-800473",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹6,525.76 exceeds the mandate cap of ₹6,062.84.",
+    "offending_items": [
+      "SKU-66982"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-932120",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-6519491' was already used by session S-ORG-444636. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-45998"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-617026",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['electronics'] are not in the mandate's allowed categories ['hotel'].",
+    "offending_items": [
+      "SKU-24505"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-536051",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['hotel'] are not in the mandate's allowed categories ['flight'].",
+    "offending_items": [
+      "SKU-35514"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-557632",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹7,548.04 plus this session's ₹7,416.71 = ₹14,964.75, over the cumulative cap of ₹7,548.04.",
+    "offending_items": [
+      "SKU-72005"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-149130",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹5,057.43 plus this session's ₹4,923.79 = ₹9,981.22, over the cumulative cap of ₹5,057.43.",
+    "offending_items": [
+      "SKU-67210"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-393634",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-4834506' was already used by session S-ORG-554760. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-60083"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-777164",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['apparel'] are not in the mandate's allowed categories ['electronics'].",
+    "offending_items": [
+      "SKU-23361"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-289923",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['apparel'] are not in the mandate's allowed categories ['hotel'].",
+    "offending_items": [
+      "SKU-41908"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-421206",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-1020420' was already used by session S-ORG-604575. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-55697"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-819549",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['hotel'] are not in the mandate's allowed categories ['electronics'].",
+    "offending_items": [
+      "SKU-16295"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-294826",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹4,965.27 plus this session's ₹4,758.74 = ₹9,724.01, over the cumulative cap of ₹4,965.27.",
+    "offending_items": [
+      "SKU-81523"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-682565",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹6,654.16 exceeds the mandate cap of ₹6,472.20.",
+    "offending_items": [
+      "SKU-74683"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-929016",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹4,456.28 exceeds the mandate cap of ₹4,295.25.",
+    "offending_items": [
+      "SKU-10449"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-338017",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹3,478.01 exceeds the mandate cap of ₹2,910.97.",
+    "offending_items": [
+      "SKU-41132"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-500237",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['hotel'] are not in the mandate's allowed categories ['groceries'].",
+    "offending_items": [
+      "SKU-57872"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-988929",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['electronics'] are not in the mandate's allowed categories ['flight'].",
+    "offending_items": [
+      "SKU-84802"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-112349",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-8797371' was already used by session S-ORG-534818. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-48581"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-547987",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-5661384' was already used by session S-ORG-598391. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-29958"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-708836",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹5,563.43 exceeds the mandate cap of ₹5,351.56.",
+    "offending_items": [
+      "SKU-60199"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-588089",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-3012878' was already used by session S-ORG-716737. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-33119"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-154798",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹3,372.70 exceeds the mandate cap of ₹2,784.81.",
+    "offending_items": [
+      "SKU-98541"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-665439",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['apparel'] are not in the mandate's allowed categories ['groceries'].",
+    "offending_items": [
+      "SKU-52874"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-897555",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['groceries'] are not in the mandate's allowed categories ['flight'].",
+    "offending_items": [
+      "SKU-63929"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-905652",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-4352411' was already used by session S-ORG-672581. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-73389"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-217476",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-7624615' was already used by session S-ORG-681748. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-59985"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-930978",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹5,292.62 plus this session's ₹5,154.87 = ₹10,447.49, over the cumulative cap of ₹5,292.62.",
+    "offending_items": [
+      "SKU-84034"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-186131",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-2304884' was already used by session S-ORG-440238. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-18592"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-871449",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-1933447' was already used by session S-ORG-555369. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-92963"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-335251",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹6,700.14 plus this session's ₹6,386.42 = ₹13,086.56, over the cumulative cap of ₹6,700.14.",
+    "offending_items": [
+      "SKU-52622"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-851406",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹6,021.04 plus this session's ₹5,818.88 = ₹11,839.92, over the cumulative cap of ₹6,021.04.",
+    "offending_items": [
+      "SKU-59356"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-836302",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['flight'] are not in the mandate's allowed categories ['hotel'].",
+    "offending_items": [
+      "SKU-79135"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-709645",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['electronics'] are not in the mandate's allowed categories ['groceries'].",
+    "offending_items": [
+      "SKU-18521"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-455736",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['hotel'] are not in the mandate's allowed categories ['flight'].",
+    "offending_items": [
+      "SKU-35339"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-109894",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['hotel'] are not in the mandate's allowed categories ['electronics'].",
+    "offending_items": [
+      "SKU-43720"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-912259",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-2023705' was already used by session S-ORG-697533. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-55824"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-357646",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹1,336.56 exceeds the mandate cap of ₹1,060.97.",
+    "offending_items": [
+      "SKU-75437"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-292221",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹3,459.88 plus this session's ₹3,388.36 = ₹6,848.24, over the cumulative cap of ₹3,459.88.",
+    "offending_items": [
+      "SKU-83922"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-992134",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹3,007.65 exceeds the mandate cap of ₹2,443.34.",
+    "offending_items": [
+      "SKU-91012"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-262597",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-8541872' was already used by session S-ORG-906177. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-16373"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-155397",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹1,918.45 plus this session's ₹1,554.93 = ₹3,473.38, over the cumulative cap of ₹1,918.45.",
+    "offending_items": [
+      "SKU-95821"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-902973",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹1,628.56 plus this session's ₹1,262.02 = ₹2,890.58, over the cumulative cap of ₹1,628.56.",
+    "offending_items": [
+      "SKU-24012"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-202075",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹2,369.48 exceeds the mandate cap of ₹2,094.41.",
+    "offending_items": [
+      "SKU-21910"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-822419",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['hotel'] are not in the mandate's allowed categories ['electronics'].",
+    "offending_items": [
+      "SKU-17217"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-113961",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹7,435.38 exceeds the mandate cap of ₹7,001.68.",
+    "offending_items": [
+      "SKU-70454"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-219624",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹6,695.61 plus this session's ₹6,303.80 = ₹12,999.41, over the cumulative cap of ₹6,695.61.",
+    "offending_items": [
+      "SKU-74033"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-439830",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['groceries'] are not in the mandate's allowed categories ['hotel'].",
+    "offending_items": [
+      "SKU-34571"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-311771",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹5,133.16 plus this session's ₹4,752.89 = ₹9,886.05, over the cumulative cap of ₹5,133.16.",
+    "offending_items": [
+      "SKU-77298"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-845262",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-5333592' was already used by session S-ORG-893735. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-73808"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-364191",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-3698722' was already used by session S-ORG-794995. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-95259"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-946030",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-8247057' was already used by session S-ORG-722566. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-99102"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-AMT-494361",
+    "violation": "amount_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Session total ₹2,073.96 exceeds the mandate cap of ₹1,841.40.",
+    "offending_items": [
+      "SKU-43854"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-478740",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-5879329' was already used by session S-ORG-790447. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-84683"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CUM-155867",
+    "violation": "cumulative_cap",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Prior spend ₹2,642.51 plus this session's ₹2,279.42 = ₹4,921.93, over the cumulative cap of ₹2,642.51.",
+    "offending_items": [
+      "SKU-43469"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-DUP-851180",
+    "violation": "duplicate",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Idempotency key 'idem-2179350' was already used by session S-ORG-310232. This is a repeat submission, not a new purchase.",
+    "offending_items": [
+      "SKU-39496"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-809755",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['electronics'] are not in the mandate's allowed categories ['apparel'].",
+    "offending_items": [
+      "SKU-82852"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-348626",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-26T10:00:00, 2026-08-09T10:00:00].",
+    "offending_items": [
+      "SKU-21244"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-600116",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-25T10:00:00, 2026-08-08T10:00:00].",
+    "offending_items": [
+      "SKU-35966"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-945868",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-25T10:00:00, 2026-08-08T10:00:00].",
+    "offending_items": [
+      "SKU-72522"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-396008",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-30T10:00:00, 2026-08-13T10:00:00].",
+    "offending_items": [
+      "SKU-83073"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-949467",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-25T10:00:00, 2026-08-08T10:00:00].",
+    "offending_items": [
+      "SKU-10026"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-494899",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-29T10:00:00, 2026-08-12T10:00:00].",
+    "offending_items": [
+      "SKU-91300"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CAT-564602",
+    "violation": "out_of_category",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Item categories ['groceries'] are not in the mandate's allowed categories ['apparel'].",
+    "offending_items": [
+      "SKU-94956"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-776942",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-23T10:00:00, 2026-08-06T10:00:00].",
+    "offending_items": [
+      "SKU-89565"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-445000",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-29T10:00:00, 2026-08-12T10:00:00].",
+    "offending_items": [
+      "SKU-39531"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-721082",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-24T10:00:00, 2026-08-07T10:00:00].",
+    "offending_items": [
+      "SKU-48139"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-258813",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-23T10:00:00, 2026-08-06T10:00:00].",
+    "offending_items": [
+      "SKU-68335"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-493141",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-31T10:00:00, 2026-08-14T10:00:00].",
+    "offending_items": [
+      "SKU-34828"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-175022",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-27T10:00:00, 2026-08-10T10:00:00].",
+    "offending_items": [
+      "SKU-59190"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-683395",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-29T10:00:00, 2026-08-12T10:00:00].",
+    "offending_items": [
+      "SKU-10741"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-285474",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-25T10:00:00, 2026-08-08T10:00:00].",
+    "offending_items": [
+      "SKU-61692"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-EXP-407286",
+    "violation": "expired_window",
+    "detected_by": "gate",
+    "confidence": 1.0,
+    "reason": "Purchase at 2026-08-15T10:00:00 falls outside the mandate's valid window [2026-07-27T10:00:00, 2026-08-10T10:00:00].",
+    "offending_items": [
+      "SKU-95834"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-280848",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Extended warranty' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "WAR-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-280848",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Expedited shipping' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-553298",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-901864",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-315948",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-668092",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Expedited shipping' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-668092",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Extended warranty' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "WAR-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-586032",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Size exchange protection' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "XCH-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-586032",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Gift wrap' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "GW-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-594539",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-134985",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Expedited shipping' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-134985",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Accidental damage cover' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "DMG-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-489418",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-559169",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-491712",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Extended warranty' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "WAR-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-171305",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Accidental damage cover' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "DMG-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-262121",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Extended warranty' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "WAR-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-459343",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Breakfast add-on' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "BRK-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-459343",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Room upgrade' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "UPG-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-827190",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority boarding' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "PRIO-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-729167",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Breakfast add-on' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "BRK-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-702779",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-216295",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-178876",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-550432",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Extended warranty' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "WAR-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-344410",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-660089",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-229023",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Extended warranty' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "WAR-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-738532",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Travel insurance' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "INS-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-421109",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Seat selection' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SEAT-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-421109",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority boarding' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "PRIO-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-986366",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Expedited shipping' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-986366",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Accidental damage cover' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "DMG-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-893637",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-976211",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Extended warranty' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "WAR-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-976211",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Accidental damage cover' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "DMG-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-882434",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Size exchange protection' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "XCH-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-882434",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Express delivery' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "EXD-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-263899",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Accidental damage cover' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "DMG-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-584668",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Travel insurance' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "INS-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-562729",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Gift wrap' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "GW-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-486397",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Priority delivery slot' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "SHIP-02"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-973818",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Late checkout' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "LATE-01"
+    ],
+    "supporting_quote": null
+  },
+  {
+    "session_id": "S-CRP-548011",
+    "violation": "scope_creep",
+    "detected_by": "verifier",
+    "confidence": 0.6,
+    "reason": "'Late checkout' does not appear in the stated intent (heuristic substring check — not LLM-verified).",
+    "offending_items": [
+      "LATE-01"
+    ],
+    "supporting_quote": null
+  }
+]
