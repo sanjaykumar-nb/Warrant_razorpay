@@ -154,8 +154,11 @@ def _mandate(rng: random.Random, tpl: dict, subject: str, cap: int, cum_cap: int
 
 
 def _base_window(rng: random.Random, now: datetime) -> tuple[datetime, datetime]:
-    start = now - timedelta(days=rng.randint(0, 3))
-    end = start + timedelta(days=14)
+    # Session timestamps are drawn as `now - up to 48h` elsewhere, so
+    # valid_from must start comfortably earlier than that or a "clean"
+    # purchase can land before its own mandate's window opens.
+    start = now - timedelta(days=rng.randint(4, 7))
+    end = start + timedelta(days=21)
     return start, end
 
 
@@ -163,7 +166,20 @@ def _sid(rng: random.Random, prefix: str) -> str:
     return f"S-{prefix}-{rng.randint(100_000, 999_999)}"
 
 
-def build_clean(rng: random.Random, now: datetime) -> Session:
+def _unique_key(rng: random.Random, used: set[str]) -> str:
+    """A random idempotency key guaranteed not to collide with any key
+    already handed out in this batch. The naive `f"idem-{randint(...)}"`
+    approach looked fine in isolation but produced a real accidental
+    collision at 270 sessions — draw-and-check instead of hoping the
+    range is large enough."""
+    while True:
+        key = f"idem-{rng.randint(10**6, 10**7)}"
+        if key not in used:
+            used.add(key)
+            return key
+
+
+def build_clean(rng: random.Random, now: datetime, used_keys: set[str]) -> Session:
     tpl = rng.choice(TEMPLATES)
     item, subject = _base_line_item(rng, tpl)
     cap = item.amount_paise + _amount(rng, 20_000, 150_000)
@@ -173,13 +189,13 @@ def build_clean(rng: random.Random, now: datetime) -> Session:
     return Session(
         session_id=_sid(rng, "CLN"), mandate=mandate, merchant=tpl["merchant"],
         line_items=[item], timestamp=now - timedelta(hours=rng.randint(0, 48)),
-        idempotency_key=f"idem-{rng.randint(10**6, 10**7)}",
+        idempotency_key=_unique_key(rng, used_keys),
         prior_spend_paise=_amount(rng, 0, cum_cap // 4),
         label=ViolationClass.CLEAN,
     )
 
 
-def build_clean_unusual(rng: random.Random, now: datetime) -> Session:
+def build_clean_unusual(rng: random.Random, now: datetime, used_keys: set[str]) -> Session:
     """Authorised but odd: the mandate explicitly grants discretion over an
     add-on, and the agent uses it. A naive verifier that pattern-matches
     'unrequested add-on = bad' will fail exactly this case."""
@@ -196,13 +212,13 @@ def build_clean_unusual(rng: random.Random, now: datetime) -> Session:
     return Session(
         session_id=_sid(rng, "UNU"), mandate=mandate, merchant=tpl["merchant"],
         line_items=[item, addon], timestamp=now - timedelta(hours=rng.randint(0, 48)),
-        idempotency_key=f"idem-{rng.randint(10**6, 10**7)}",
+        idempotency_key=_unique_key(rng, used_keys),
         prior_spend_paise=_amount(rng, 0, cum_cap // 4),
         label=ViolationClass.CLEAN_UNUSUAL,
     )
 
 
-def build_amount_cap(rng: random.Random, now: datetime) -> Session:
+def build_amount_cap(rng: random.Random, now: datetime, used_keys: set[str]) -> Session:
     tpl = rng.choice(TEMPLATES)
     item, subject = _base_line_item(rng, tpl)
     cap = item.amount_paise - _amount(rng, 15_000, 60_000)  # cap set below what gets bought
@@ -213,13 +229,13 @@ def build_amount_cap(rng: random.Random, now: datetime) -> Session:
     return Session(
         session_id=_sid(rng, "AMT"), mandate=mandate, merchant=tpl["merchant"],
         line_items=[item], timestamp=now - timedelta(hours=rng.randint(0, 48)),
-        idempotency_key=f"idem-{rng.randint(10**6, 10**7)}",
+        idempotency_key=_unique_key(rng, used_keys),
         prior_spend_paise=0,
         label=ViolationClass.AMOUNT_CAP,
     )
 
 
-def build_cumulative_cap(rng: random.Random, now: datetime) -> Session:
+def build_cumulative_cap(rng: random.Random, now: datetime, used_keys: set[str]) -> Session:
     tpl = rng.choice(TEMPLATES)
     item, subject = _base_line_item(rng, tpl)
     cap = item.amount_paise + _amount(rng, 50_000, 150_000)  # this session alone is fine
@@ -230,13 +246,13 @@ def build_cumulative_cap(rng: random.Random, now: datetime) -> Session:
     return Session(
         session_id=_sid(rng, "CUM"), mandate=mandate, merchant=tpl["merchant"],
         line_items=[item], timestamp=now - timedelta(hours=rng.randint(0, 48)),
-        idempotency_key=f"idem-{rng.randint(10**6, 10**7)}",
+        idempotency_key=_unique_key(rng, used_keys),
         prior_spend_paise=prior,
         label=ViolationClass.CUMULATIVE_CAP,
     )
 
 
-def build_out_of_category(rng: random.Random, now: datetime) -> Session:
+def build_out_of_category(rng: random.Random, now: datetime, used_keys: set[str]) -> Session:
     tpl = rng.choice(TEMPLATES)
     wrong_tpl = rng.choice([t for t in TEMPLATES if t["category"] != tpl["category"]])
     item, subject = _base_line_item(rng, tpl)
@@ -249,13 +265,13 @@ def build_out_of_category(rng: random.Random, now: datetime) -> Session:
     return Session(
         session_id=_sid(rng, "CAT"), mandate=mandate, merchant=wrong_tpl["merchant"],
         line_items=[wrong_item], timestamp=now - timedelta(hours=rng.randint(0, 48)),
-        idempotency_key=f"idem-{rng.randint(10**6, 10**7)}",
+        idempotency_key=_unique_key(rng, used_keys),
         prior_spend_paise=0,
         label=ViolationClass.OUT_OF_CATEGORY,
     )
 
 
-def build_expired_window(rng: random.Random, now: datetime) -> Session:
+def build_expired_window(rng: random.Random, now: datetime, used_keys: set[str]) -> Session:
     tpl = rng.choice(TEMPLATES)
     item, subject = _base_line_item(rng, tpl)
     cap = item.amount_paise + _amount(rng, 50_000, 150_000)
@@ -267,32 +283,47 @@ def build_expired_window(rng: random.Random, now: datetime) -> Session:
     return Session(
         session_id=_sid(rng, "EXP"), mandate=mandate, merchant=tpl["merchant"],
         line_items=[item], timestamp=now,
-        idempotency_key=f"idem-{rng.randint(10**6, 10**7)}",
+        idempotency_key=_unique_key(rng, used_keys),
         prior_spend_paise=0,
         label=ViolationClass.EXPIRED_WINDOW,
     )
 
 
-def build_duplicate(rng: random.Random, now: datetime, shared_keys: list[str]) -> Session:
+def build_duplicate_pair(rng: random.Random, now: datetime, used_keys: set[str]) -> tuple[Session, Session]:
+    """A duplicate only means something relative to an earlier session that
+    used the same idempotency key. So this builds BOTH: the legitimate
+    original purchase (label CLEAN) and the blind retry a few minutes later
+    that reuses its key (label DUPLICATE). Without the paired original, the
+    gate has nothing to detect the "duplicate" against — a bug caught by
+    validating recall against the generator's own output before building
+    anything downstream of it."""
     tpl = rng.choice(TEMPLATES)
     item, subject = _base_line_item(rng, tpl)
     cap = item.amount_paise + _amount(rng, 50_000, 150_000)
     cum_cap = cap * 3
     start, end = _base_window(rng, now)
     mandate = _mandate(rng, tpl, subject, cap, cum_cap, start, end)
-    # reuse an idempotency key already seen in this batch — a blind retry
-    key = rng.choice(shared_keys) if shared_keys and rng.random() < 0.7 else f"idem-{rng.randint(10**6, 10**7)}"
-    shared_keys.append(key)
-    return Session(
+    key = _unique_key(rng, used_keys)
+    origin_ts = now - timedelta(hours=rng.randint(0, 40))
+
+    origin = Session(
+        session_id=_sid(rng, "ORG"), mandate=mandate, merchant=tpl["merchant"],
+        line_items=[item], timestamp=origin_ts,
+        idempotency_key=key,
+        prior_spend_paise=0,
+        label=ViolationClass.CLEAN,
+    )
+    retry = Session(
         session_id=_sid(rng, "DUP"), mandate=mandate, merchant=tpl["merchant"],
-        line_items=[item], timestamp=now - timedelta(minutes=rng.randint(0, 5)),
+        line_items=[item], timestamp=origin_ts + timedelta(minutes=rng.randint(1, 5)),
         idempotency_key=key,
         prior_spend_paise=0,
         label=ViolationClass.DUPLICATE,
     )
+    return origin, retry
 
 
-def build_scope_creep(rng: random.Random, now: datetime) -> Session:
+def build_scope_creep(rng: random.Random, now: datetime, used_keys: set[str]) -> Session:
     tpl = rng.choice([t for t in TEMPLATES if t["addons"]])
     item, subject = _base_line_item(rng, tpl)
     n_addons = rng.choice([1, 1, 2])
@@ -310,7 +341,7 @@ def build_scope_creep(rng: random.Random, now: datetime) -> Session:
     return Session(
         session_id=_sid(rng, "CRP"), mandate=mandate, merchant=tpl["merchant"],
         line_items=[item, *addon_items], timestamp=now - timedelta(hours=rng.randint(0, 48)),
-        idempotency_key=f"idem-{rng.randint(10**6, 10**7)}",
+        idempotency_key=_unique_key(rng, used_keys),
         prior_spend_paise=_amount(rng, 0, cum_cap // 5),
         label=ViolationClass.SCOPE_CREEP,
     )
@@ -328,18 +359,25 @@ BUILDERS = {
 
 
 def generate_sessions(seed: int = SEED) -> list[Session]:
+    """Note: total output size is len(sessions) > sum(CLASS_COUNTS.values()),
+    because each DUPLICATE requires a paired origin session (labelled
+    CLEAN) that the gate can detect the repeat against. CLASS_COUNTS
+    describes intent — how many of each *labelled* violation to produce —
+    not the raw session count."""
     rng = random.Random(seed)
     now = datetime(2026, 8, 15, 10, 0, 0)
     sessions: list[Session] = []
-    shared_dup_keys: list[str] = []
+    used_keys: set[str] = set()
 
     for vclass, count in CLASS_COUNTS.items():
         for _ in range(count):
             if vclass == ViolationClass.DUPLICATE:
-                s = build_duplicate(rng, now, shared_dup_keys)
+                origin, retry = build_duplicate_pair(rng, now, used_keys)
+                sessions.append(origin)
+                sessions.append(retry)
             else:
-                s = BUILDERS[vclass](rng, now)
-            sessions.append(s)
+                s = BUILDERS[vclass](rng, now, used_keys)
+                sessions.append(s)
 
     rng.shuffle(sessions)
     return sessions
