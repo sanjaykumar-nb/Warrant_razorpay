@@ -6,25 +6,31 @@ question: does every purchased line item fall within what the mandate's
 `user_intent` actually asked for? The gate has already ruled out every
 rule-catchable violation before a session even reaches here.
 
-Two implementations share the same interface:
+Three implementations share the same interface:
 
-  LLMVerifier        — calls Claude with structured output. This is what
-                        the submission ships with and what the reported
-                        metrics must come from.
+  LLMVerifier         — calls Claude with structured output.
+
+  GeminiVerifier       — calls Gemini (free tier) with forced function
+                        calling. Functionally equivalent to LLMVerifier —
+                        same prompt, same tool schema, same finding shape —
+                        so results are comparable across providers. This is
+                        the path this submission actually reports numbers
+                        from, since it runs at zero API cost.
 
   HeuristicVerifier   — a crude substring check with NO model call. It
                         exists only so the rest of the pipeline (metrics,
                         evidence pack, CLI) can be built and tested before
                         an API key is available. It is measurably worse
-                        than the LLM approach by construction — it exists
-                        to unblock development, not to be reported as a
-                        result. `get_verifier()` prints a loud warning
+                        than either LLM approach by construction — it
+                        exists to unblock development, not to be reported
+                        as a result. `get_verifier()` prints a loud warning
                         whenever it falls back to this path.
 """
 
 from __future__ import annotations
 
 import os
+import time
 from typing import Literal, Protocol
 
 from pydantic import BaseModel
@@ -124,9 +130,11 @@ class LLMVerifier:
     name = "llm"
     MODEL = "claude-sonnet-5"
 
-    def __init__(self, api_key: str | None = None) -> None:
+    def __init__(self, api_key: str | None = None, workspace_id: str | None = None) -> None:
         import anthropic  # imported lazily so the heuristic path never needs the SDK installed to matter
-        self._client = anthropic.Anthropic(api_key=api_key)
+        workspace_id = workspace_id or os.environ.get("ANTHROPIC_WORKSPACE_ID")
+        headers = {"anthropic-workspace-id": workspace_id} if workspace_id else None
+        self._client = anthropic.Anthropic(api_key=api_key, default_headers=headers)
 
     def verify(self, session: Session) -> VerifyResult:
         response = self._client.messages.create(
@@ -158,6 +166,83 @@ class LLMVerifier:
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
         )
+
+
+class GeminiVerifier:
+    """Same prompt, same tool schema, same Finding shape as LLMVerifier —
+    only the transport differs. Runs on Gemini's free tier (Flash models),
+    so cost_paise is genuinely 0 for this project, not just untracked."""
+
+    name = "gemini"
+    MODEL = "gemini-3-flash"
+    MAX_RETRIES = 4
+
+    def __init__(self, api_key: str) -> None:
+        from google import genai  # lazy import: heuristic/Anthropic paths don't need this SDK
+        self._genai = genai
+        self._client = genai.Client(api_key=api_key)
+
+    def verify(self, session: Session) -> VerifyResult:
+        from google.genai import types
+
+        func_decl = types.FunctionDeclaration(
+            name=VERIFIER_TOOL_SCHEMA["name"],
+            description=VERIFIER_TOOL_SCHEMA["description"],
+            parameters_json_schema=VERIFIER_TOOL_SCHEMA["input_schema"],
+        )
+        config = types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            tools=[types.Tool(function_declarations=[func_decl])],
+            tool_config=types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(
+                    mode=types.FunctionCallingConfigMode.ANY,
+                    allowed_function_names=[VERIFIER_TOOL_SCHEMA["name"]],
+                )
+            ),
+        )
+
+        response = self._call_with_retry(session, config)
+
+        parts = response.candidates[0].content.parts
+        call = next(p.function_call for p in parts if p.function_call is not None)
+        parsed = _LLMOutput.model_validate(dict(call.args))
+
+        findings = [
+            Finding(
+                session_id=session.session_id,
+                violation=ViolationClass.SCOPE_CREEP,
+                detected_by="verifier",
+                confidence=f.confidence,
+                reason=f.reason,
+                offending_items=[f.offending_sku],
+                supporting_quote=f.supporting_quote,
+            )
+            for f in parsed.findings
+        ]
+        usage = response.usage_metadata
+        return VerifyResult(
+            findings=findings,
+            input_tokens=usage.prompt_token_count or 0,
+            output_tokens=usage.candidates_token_count or 0,
+        )
+
+    def _call_with_retry(self, session: Session, config):
+        """Free-tier Gemini Flash is capped at 10 requests/minute. With 170
+        calls in a batch, transient 429s are expected, not exceptional —
+        back off and retry rather than letting the whole run die on one."""
+        last_error: Exception | None = None
+        for attempt in range(self.MAX_RETRIES):
+            try:
+                return self._client.models.generate_content(
+                    model=self.MODEL,
+                    contents=_build_user_message(session),
+                    config=config,
+                )
+            except Exception as e:  # noqa: BLE001 — SDK exception types vary by transport
+                last_error = e
+                if attempt < self.MAX_RETRIES - 1:
+                    time.sleep(8 * (attempt + 1))
+        raise last_error
 
 
 class HeuristicVerifier:
@@ -194,15 +279,21 @@ class HeuristicVerifier:
 
 
 def get_verifier() -> Verifier:
+    """Preference order: Gemini (free tier, what this submission's numbers
+    come from) -> Anthropic (if credit is available) -> heuristic fallback."""
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    if gemini_key:
+        return GeminiVerifier(api_key=gemini_key)
+
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if api_key:
-        return LLMVerifier(api_key=api_key)
+        return LLMVerifier(api_key=api_key, workspace_id=os.environ.get("ANTHROPIC_WORKSPACE_ID"))
 
     print(
         "\n"
-        "!! WARNING: ANTHROPIC_API_KEY not set. Falling back to HeuristicVerifier. !!\n"
-        "!! This is a placeholder for development only — it does NOT use a      !!\n"
-        "!! language model and its numbers must NOT be reported as results.     !!\n"
-        "!! Set ANTHROPIC_API_KEY and re-run before recording any metric.       !!\n"
+        "!! WARNING: no GEMINI_API_KEY or ANTHROPIC_API_KEY set.                !!\n"
+        "!! Falling back to HeuristicVerifier — development placeholder only.   !!\n"
+        "!! It does NOT use a language model; its numbers must NOT be reported. !!\n"
+        "!! Set GEMINI_API_KEY (free) and re-run before recording any metric.   !!\n"
     )
     return HeuristicVerifier()

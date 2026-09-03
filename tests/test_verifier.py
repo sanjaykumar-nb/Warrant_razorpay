@@ -18,6 +18,7 @@ from warrant.schemas import Session, ViolationClass
 from warrant.verifier import (
     SYSTEM_PROMPT,
     VERIFIER_TOOL_SCHEMA,
+    GeminiVerifier,
     HeuristicVerifier,
     LLMVerifier,
     _build_user_message,
@@ -161,7 +162,8 @@ def test_tool_schema_name_matches_forced_tool_choice():
     assert VERIFIER_TOOL_SCHEMA["name"] == "report_scope_creep"
 
 
-def test_get_verifier_falls_back_to_heuristic_without_key(monkeypatch, capsys):
+def test_get_verifier_falls_back_to_heuristic_without_any_key(monkeypatch, capsys):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     verifier = get_verifier()
     assert isinstance(verifier, HeuristicVerifier)
@@ -170,7 +172,95 @@ def test_get_verifier_falls_back_to_heuristic_without_key(monkeypatch, capsys):
     assert "not be reported" in warning.lower() or "must not" in warning.lower()
 
 
-def test_get_verifier_returns_llm_verifier_with_key(monkeypatch):
+def test_get_verifier_returns_llm_verifier_with_only_anthropic_key(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-not-real")
     verifier = get_verifier()
     assert isinstance(verifier, LLMVerifier)
+
+
+def test_get_verifier_prefers_gemini_when_both_keys_present(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "test-not-real")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-not-real")
+    verifier = get_verifier()
+    assert isinstance(verifier, GeminiVerifier)
+
+
+# --- GeminiVerifier: mocked, no network, no key ----------------------------
+
+def _fake_gemini_response(findings: list[dict], prompt_tokens: int = 400, candidates_tokens: int = 90):
+    function_call = SimpleNamespace(args=findings and {"findings": findings} or {"findings": []})
+    part = SimpleNamespace(function_call=function_call)
+    content = SimpleNamespace(parts=[part])
+    candidate = SimpleNamespace(content=content)
+    usage = SimpleNamespace(prompt_token_count=prompt_tokens, candidates_token_count=candidates_tokens)
+    return SimpleNamespace(candidates=[candidate], usage_metadata=usage)
+
+
+def _mocked_gemini_verifier(monkeypatch, response) -> GeminiVerifier:
+    verifier = GeminiVerifier(api_key="test-not-real")
+    monkeypatch.setattr(verifier._client.models, "generate_content", lambda **kwargs: response)
+    return verifier
+
+
+def test_gemini_parses_function_call_into_findings(monkeypatch, scope_creep_session):
+    addon_sku = scope_creep_session.line_items[1].sku
+    response = _fake_gemini_response([
+        {"offending_sku": addon_sku, "reason": "Not authorised by the intent.", "supporting_quote": None, "confidence": 0.88}
+    ])
+    verifier = _mocked_gemini_verifier(monkeypatch, response)
+    result = verifier.verify(scope_creep_session)
+
+    assert len(result.findings) == 1
+    f = result.findings[0]
+    assert f.session_id == scope_creep_session.session_id
+    assert f.violation == ViolationClass.SCOPE_CREEP
+    assert f.detected_by == "verifier"
+    assert f.offending_items == [addon_sku]
+    assert f.confidence == pytest.approx(0.88)
+
+
+def test_gemini_empty_findings_when_model_reports_nothing(monkeypatch, clean_session):
+    response = _fake_gemini_response([])
+    verifier = _mocked_gemini_verifier(monkeypatch, response)
+    result = verifier.verify(clean_session)
+    assert result.findings == []
+
+
+def test_gemini_cost_computed_from_usage_metadata(monkeypatch, clean_session):
+    response = _fake_gemini_response([], prompt_tokens=777, candidates_tokens=33)
+    verifier = _mocked_gemini_verifier(monkeypatch, response)
+    result = verifier.verify(clean_session)
+    assert result.input_tokens == 777
+    assert result.output_tokens == 33
+    assert result.cost_paise == cost_paise(777, 33)
+
+
+def test_gemini_retries_on_transient_error_then_succeeds(monkeypatch, clean_session):
+    monkeypatch.setattr("warrant.verifier.time.sleep", lambda _seconds: None)
+    response = _fake_gemini_response([])
+    calls = {"n": 0}
+
+    def flaky_create(**kwargs):
+        calls["n"] += 1
+        if calls["n"] < 3:
+            raise RuntimeError("429 rate limited")
+        return response
+
+    verifier = GeminiVerifier(api_key="test-not-real")
+    monkeypatch.setattr(verifier._client.models, "generate_content", flaky_create)
+    result = verifier.verify(clean_session)
+    assert calls["n"] == 3
+    assert result.findings == []
+
+
+def test_gemini_gives_up_after_max_retries(monkeypatch, clean_session):
+    monkeypatch.setattr("warrant.verifier.time.sleep", lambda _seconds: None)
+
+    def always_fails(**kwargs):
+        raise RuntimeError("persistent failure")
+
+    verifier = GeminiVerifier(api_key="test-not-real")
+    monkeypatch.setattr(verifier._client.models, "generate_content", always_fails)
+    with pytest.raises(RuntimeError, match="persistent failure"):
+        verifier.verify(clean_session)
