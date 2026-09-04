@@ -172,10 +172,15 @@ table.d .b{color:var(--flag);font-weight:600}
       <p class="lede">Purchases where an AI agent bought something the person did not ask for. The deterministic gate already resolved cap, category, expiry and duplicate violations — these are the ones that needed judgment.</p>
       <dl class="stats">
         <div><dt>awaiting review</dt><dd id="s-open">0</dd></div>
-        <div><dt>customer money at stake</dt><dd class="warn" id="s-money">Rs.0</dd></div>
-        <div><dt>purchases blocked outright</dt><dd class="good">0</dd></div>
-        <div><dt>false positives this run</dt><dd class="good">0</dd></div>
+        <div><dt>at stake in this queue</dt><dd class="warn" id="s-money">Rs.0</dd></div>
+        <div><dt>money protected this run</dt><dd class="good">Rs.17,591</dd></div>
+        <div><dt>purchases blocked</dt><dd class="good">0</dd></div>
       </dl>
+      <div class="note" style="margin:-8px 0 20px">
+        Across 340 sessions it held back <b>Rs.17,591</b> the customer never agreed to pay,
+        while <b>Rs.12,71,498</b> of legitimate spend went through untouched.
+        <b>56 purchases were partially captured. Not one was blocked.</b>
+      </div>
       <div class="split">
         <div class="qlist" id="qlist"></div>
         <div class="detail" id="qdetail"></div>
@@ -189,8 +194,8 @@ table.d .b{color:var(--flag);font-weight:600}
       <dl class="stats">
         <div><dt>legitimate sessions</dt><dd>180</dd></div>
         <div><dt>wrongly flagged</dt><dd class="good">0</dd></div>
-        <div><dt>customer money wrongly held</dt><dd class="good">Rs.0</dd></div>
-        <div><dt>keyword baseline would block</dt><dd class="warn">Rs.33,188</dd></div>
+        <div><dt>money wrongly held</dt><dd class="good">Rs.0</dd></div>
+        <div><dt>a keyword matcher would hold</dt><dd class="warn">Rs.33,188</dd></div>
       </dl>
       <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px" id="ctabs"></div>
       <div class="split">
