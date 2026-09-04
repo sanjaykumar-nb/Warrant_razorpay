@@ -14,6 +14,5 @@ dashboard.html
 results/dashboard_embed.json
 checker.html
 console.html
-console_template.html
 results/console_data.json
 results/real_run_v2.log
