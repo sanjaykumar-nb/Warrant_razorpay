@@ -10,3 +10,5 @@ build/
 results/real_run.log
 annotations/
 results/_sim_annotations/
+dashboard.html
+results/dashboard_embed.json

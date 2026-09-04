@@ -10,6 +10,8 @@ made that fall outside what the human actually asked for.
 
 Razorpay AI Buildathon · **Track 02 — AI Risk Manager** · strictly defence-only.
 
+**[Live results console →](https://claude.ai/code/artifact/efc615e0-708a-492a-9a8e-b7deea2fef63)** — browse the real flagged purchases, the model's reasoning on each, and where it fails.
+
 ---
 
 ## Results
