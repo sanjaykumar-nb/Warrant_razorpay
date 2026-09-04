@@ -288,10 +288,14 @@ class GroqVerifier:
     # + 5 clean_unusual), so the tiebreak was token efficiency against the
     # 6k tokens/min free cap. qwen3.6-27b burned ~1430 tok/call on verbose
     # reasoning; this one is the largest available model at ~730 tok/call.
-    # gpt-oss-120b exhausted its 200k tokens/day quota mid-batch. TPD is
-    # enforced per model, so this one has a separate daily budget — and it
-    # scored identically (10/10) on the discriminating sample.
-    MODEL = "qwen/qwen3.8-27b"
+    # Model selection has been driven by two things: measured accuracy on a
+    # discriminating sample, and Groq's 200k tokens/day cap, which is
+    # enforced PER MODEL. gpt-oss-120b and qwen3.8-27b were both exhausted
+    # in a single day's runs, so this is the third model with a fresh
+    # budget. Measured 12/13 on the discriminating sample (one false
+    # positive on clean_mandatory), ~794 tokens/call.
+    # Caches are per-model, so switching never discards prior work.
+    MODEL = "openai/gpt-oss-20b"
     MAX_RETRIES = 5
 
     def __init__(self, api_key: str) -> None:

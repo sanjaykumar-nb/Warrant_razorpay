@@ -55,14 +55,21 @@ def run_pipeline(
     residual = [s for s in sessions if s.session_id not in gate_flagged_ids]
 
     model = getattr(verifier, "MODEL", verifier.name)
+
+    # One cache file per model. Results from different models must never
+    # be mixed into a single reported number, but nor should switching
+    # models destroy work already done on the previous one — that lesson
+    # cost 170 completed sessions the first time round.
+    if cache_path:
+        slug = model.replace("/", "_").replace(":", "_")
+        cache_path = cache_path.with_name(f"{cache_path.stem}_{slug}{cache_path.suffix}")
+
     cache: dict[str, dict] = {}
     if cache_path and cache_path.exists():
         raw = json.loads(cache_path.read_text(encoding="utf-8"))
         if raw.get("model") == model:
             cache = raw.get("entries", {})
             print(f"  resuming: {len(cache)} sessions already verified for {model}")
-        else:
-            print(f"  cache is for a different model ({raw.get('model')}), ignoring")
 
     def flush() -> None:
         if cache_path:
