@@ -14,7 +14,7 @@ from types import SimpleNamespace
 import pytest
 
 from warrant.generate import generate_sessions
-from warrant.pricing import cost_paise
+from warrant.pricing import CLAUDE_SONNET_5, cost_paise
 from warrant.schemas import Session, ViolationClass
 from warrant.verifier import (
     SYSTEM_PROMPT,
@@ -94,7 +94,7 @@ def test_cost_computed_from_actual_usage(monkeypatch, clean_session):
     result = verifier.verify(clean_session)
     assert result.input_tokens == 1234
     assert result.output_tokens == 56
-    assert result.cost_paise == cost_paise(1234, 56)
+    assert result.cost_paise == cost_paise(1234, 56, CLAUDE_SONNET_5)
 
 
 def test_supporting_quote_is_carried_through(monkeypatch, scope_creep_session):
@@ -232,13 +232,19 @@ def test_gemini_empty_findings_when_model_reports_nothing(monkeypatch, clean_ses
     assert result.findings == []
 
 
-def test_gemini_cost_computed_from_usage_metadata(monkeypatch, clean_session):
+def test_gemini_cost_is_zero_on_free_tier_but_projection_is_not(monkeypatch, clean_session):
+    """Regression guard for a real bug: an earlier version applied Claude
+    pricing to free-tier token counts and reported it as spend incurred.
+    Actual cost on a free tier is zero; the paid-model figure is a
+    clearly-separate projection."""
     response = _fake_gemini_response([], prompt_tokens=777, candidates_tokens=33)
     verifier = _mocked_gemini_verifier(monkeypatch, response)
     result = verifier.verify(clean_session)
     assert result.input_tokens == 777
     assert result.output_tokens == 33
-    assert result.cost_paise == cost_paise(777, 33)
+    assert result.cost_paise == 0, "free tier must report zero actual cost"
+    assert result.projected_cost_paise == cost_paise(777, 33, CLAUDE_SONNET_5)
+    assert result.projected_cost_paise > 0
 
 
 def test_gemini_retries_on_transient_error_then_succeeds(monkeypatch, clean_session):
@@ -317,13 +323,27 @@ def test_groq_empty_findings_when_model_reports_nothing(monkeypatch, clean_sessi
     assert result.findings == []
 
 
-def test_groq_cost_computed_from_usage(monkeypatch, clean_session):
+def test_groq_cost_is_zero_on_free_tier_but_projection_is_not(monkeypatch, clean_session):
+    """Same regression guard as the Gemini case. This is the provider the
+    reported numbers come from, so a fabricated cost here would go
+    straight into the submission."""
     response = _fake_groq_response([], prompt_tokens=642, completion_tokens=88)
     verifier = _mocked_groq_verifier(monkeypatch, response)
     result = verifier.verify(clean_session)
     assert result.input_tokens == 642
     assert result.output_tokens == 88
-    assert result.cost_paise == cost_paise(642, 88)
+    assert result.cost_paise == 0, "Groq free tier must report zero actual cost"
+    assert result.projected_cost_paise == cost_paise(642, 88, CLAUDE_SONNET_5)
+    assert result.projected_cost_paise > 0
+
+
+def test_paid_provider_reports_real_cost(monkeypatch, clean_session):
+    """The flip side: a paid provider must NOT report zero."""
+    response = _fake_response({"findings": []}, input_tokens=1000, output_tokens=100)
+    verifier = _mocked_verifier(monkeypatch, response)
+    result = verifier.verify(clean_session)
+    assert result.cost_paise == cost_paise(1000, 100, CLAUDE_SONNET_5)
+    assert result.cost_paise > 0
 
 
 def test_groq_sends_forced_tool_choice_and_correct_model(monkeypatch, clean_session):

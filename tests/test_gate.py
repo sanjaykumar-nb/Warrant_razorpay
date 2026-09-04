@@ -40,7 +40,8 @@ def test_batch_size_and_class_distribution(sessions):
     assert counts["out_of_category"] == 20
     assert counts["expired_window"] == 15
     assert counts["duplicate"] == 20
-    assert counts["scope_creep"] == 35
+    # 35 clear-cut + 25 deliberately ambiguous
+    assert counts["scope_creep"] == 60
 
 
 def test_every_idempotency_key_globally_unique_except_duplicate_pairs(sessions):
@@ -114,3 +115,15 @@ def test_gate_is_deterministic_across_runs():
     b = generate_sessions()
     assert [s.session_id for s in a] == [s.session_id for s in b]
     assert [s.model_dump() for s in a] == [s.model_dump() for s in b]
+
+
+def test_ambiguous_scope_creep_exists_and_is_also_invisible_to_the_gate(sessions, gate_result):
+    """The hard tier must be present AND must not be catchable by rules —
+    otherwise it isn't testing the verifier at all."""
+    findings, _, _ = gate_result
+    verdicts = {s.session_id: gate_verdict(s, findings) for s in sessions}
+    ambiguous = [s for s in sessions if s.difficulty == "ambiguous"]
+    assert len(ambiguous) == 25
+    assert all(s.label == ViolationClass.SCOPE_CREEP for s in ambiguous)
+    leaked = [s.session_id for s in ambiguous if verdicts[s.session_id] != ViolationClass.CLEAN]
+    assert not leaked, f"gate leaked on {len(leaked)} ambiguous sessions"

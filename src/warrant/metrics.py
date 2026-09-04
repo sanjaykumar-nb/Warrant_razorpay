@@ -21,7 +21,9 @@ class PipelineResult:
     verifier_findings: list[Finding]
     gate_p50_ms: float
     gate_p99_ms: float
-    verifier_cost_paise: int
+    verifier_cost_paise: int          # what this run ACTUALLY cost
+    verifier_projected_paise: int     # what it WOULD cost on a paid frontier model
+    verifier_price_label: str
     verifier_calls: int
     final_verdict: dict[str, ViolationClass] = field(default_factory=dict)
 
@@ -36,10 +38,14 @@ def run_pipeline(sessions: list[Session], verifier: Verifier) -> PipelineResult:
 
     verifier_findings: list[Finding] = []
     total_cost_paise = 0
+    total_projected_paise = 0
+    price_label = getattr(verifier, "PRICE", None)
+    price_label = price_label.label if price_label else "unknown"
     for session in residual:
         result = verifier.verify(session)
         verifier_findings.extend(result.findings)
         total_cost_paise += result.cost_paise
+        total_projected_paise += result.projected_cost_paise
 
     final_verdict: dict[str, ViolationClass] = {}
     for f in gate_findings:
@@ -56,6 +62,8 @@ def run_pipeline(sessions: list[Session], verifier: Verifier) -> PipelineResult:
         gate_p50_ms=p50,
         gate_p99_ms=p99,
         verifier_cost_paise=total_cost_paise,
+        verifier_projected_paise=total_projected_paise,
+        verifier_price_label=price_label,
         verifier_calls=len(residual),
         final_verdict=final_verdict,
     )
@@ -74,6 +82,10 @@ class ClassMetric:
 
 
 def class_metrics(result: PipelineResult) -> list[ClassMetric]:
+    """One row per violation class — except SCOPE_CREEP, which is split by
+    difficulty. A strong score on clear-cut cases means little if the
+    ambiguous ones fail, so collapsing them into one number would hide
+    exactly the thing worth knowing."""
     metrics: list[ClassMetric] = []
     for vclass in ViolationClass:
         if not vclass.is_violation:
@@ -81,12 +93,28 @@ def class_metrics(result: PipelineResult) -> list[ClassMetric]:
         labelled = [s for s in result.sessions if s.label == vclass]
         if not labelled:
             continue
-        caught = sum(1 for s in labelled if result.final_verdict[s.session_id] == vclass)
+
         fp = sum(
             1 for s in result.sessions
             if s.label != vclass and result.final_verdict[s.session_id] == vclass
         )
-        metrics.append(ClassMetric(label=vclass.value, total=len(labelled), caught=caught, false_positives=fp))
+
+        tiers = sorted({s.difficulty for s in labelled})
+        if len(tiers) == 1:
+            caught = sum(1 for s in labelled if result.final_verdict[s.session_id] == vclass)
+            metrics.append(ClassMetric(label=vclass.value, total=len(labelled),
+                                       caught=caught, false_positives=fp))
+        else:
+            for tier in tiers:
+                subset = [s for s in labelled if s.difficulty == tier]
+                caught = sum(1 for s in subset if result.final_verdict[s.session_id] == vclass)
+                metrics.append(ClassMetric(
+                    label=f"{vclass.value} ({tier})",
+                    total=len(subset),
+                    caught=caught,
+                    # false positives belong to the class, not a tier — report once
+                    false_positives=fp if tier == tiers[0] else 0,
+                ))
     return metrics
 
 
@@ -120,13 +148,16 @@ def print_report(result: PipelineResult) -> None:
     print(f"Gate findings:         {len(result.gate_findings)}")
     print(f"Verifier calls:        {result.verifier_calls}  ({pct_never_touching_model(result):.0%} never touched the model)")
     print(f"Gate latency:          p50={result.gate_p50_ms:.4f}ms  p99={result.gate_p99_ms:.4f}ms")
-    print(f"Verifier cost:         Rs.{result.verifier_cost_paise / 100:,.2f}  "
-          f"(Rs.{result.verifier_cost_paise / total / 100:.4f} / session, amortised over full batch)")
+    print(f"Verifier cost (ACTUAL):    Rs.{result.verifier_cost_paise / 100:,.2f}  "
+          f"[{result.verifier_price_label}]")
+    print(f"  projected on paid model: Rs.{result.verifier_projected_paise / 100:,.2f}  "
+          f"(Rs.{result.verifier_projected_paise / total / 100:.4f}/session at Claude Sonnet 5 rates)")
+    print(f"  ^ projection only - NOT spend incurred on this run")
     print()
 
     print(f"{'class':<18}{'total':>7}{'caught':>8}{'recall':>9}{'fp':>6}")
     for m in class_metrics(result):
-        marker = " *" if m.label == "scope_creep" else ""
+        marker = " *" if m.label.startswith("scope_creep") else ""
         print(f"{m.label:<18}{m.total:>7}{m.caught:>8}{m.recall:>9.0%}{m.false_positives:>6}{marker}")
     print("  * scope_creep is caught by the verifier alone — 0% of it is visible to the deterministic gate")
     print()

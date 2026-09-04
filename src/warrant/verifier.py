@@ -35,7 +35,7 @@ from typing import Literal, Protocol
 
 from pydantic import BaseModel
 
-from warrant.pricing import cost_paise
+from warrant.pricing import CLAUDE_SONNET_5, FREE_TIER, TokenPrice, cost_paise
 from warrant.schemas import Finding, Session, ViolationClass
 
 
@@ -43,14 +43,23 @@ class VerifyResult(BaseModel):
     findings: list[Finding]
     input_tokens: int = 0
     output_tokens: int = 0
+    price: TokenPrice = FREE_TIER
 
     @property
     def cost_paise(self) -> int:
-        return cost_paise(self.input_tokens, self.output_tokens)
+        """What this call ACTUALLY cost, at the provider's real rates."""
+        return cost_paise(self.input_tokens, self.output_tokens, self.price)
+
+    @property
+    def projected_cost_paise(self) -> int:
+        """What the same tokens WOULD cost on a paid frontier model.
+        A projection for the scaling argument — never spend incurred."""
+        return cost_paise(self.input_tokens, self.output_tokens, CLAUDE_SONNET_5)
 
 
 class Verifier(Protocol):
     name: str
+    PRICE: TokenPrice
 
     def verify(self, session: Session) -> VerifyResult: ...
 
@@ -129,6 +138,7 @@ def _build_user_message(session: Session) -> str:
 class LLMVerifier:
     name = "llm"
     MODEL = "claude-sonnet-5"
+    PRICE = CLAUDE_SONNET_5
 
     def __init__(self, api_key: str | None = None, workspace_id: str | None = None) -> None:
         import anthropic  # imported lazily so the heuristic path never needs the SDK installed to matter
@@ -165,6 +175,7 @@ class LLMVerifier:
             findings=findings,
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
+            price=self.PRICE,
         )
 
 
@@ -174,6 +185,7 @@ class GeminiVerifier:
     so cost_paise is genuinely 0 for this project, not just untracked."""
 
     name = "gemini"
+    PRICE = FREE_TIER  # Gemini free tier: no per-token charge
     # Confirmed against this key's actual model list on 3 Sep 2026 via
     # client.models.list() — "gemini-3-flash" (the marketing name) is not
     # a real model id; this is the free-tier-eligible non-preview flash
@@ -229,6 +241,7 @@ class GeminiVerifier:
             findings=findings,
             input_tokens=usage.prompt_token_count or 0,
             output_tokens=usage.candidates_token_count or 0,
+            price=self.PRICE,
         )
 
     def _call_with_retry(self, session: Session, config):
@@ -269,6 +282,7 @@ class GroqVerifier:
     backoff matters even more here."""
 
     name = "groq"
+    PRICE = FREE_TIER  # Groq free tier: no credits system, no per-token charge
     # Chosen by measurement, not assumption: qwen3.8-27b, gpt-oss-120b and
     # qwen3.6-27b all scored 10/10 on a discriminating sample (5 scope_creep
     # + 5 clean_unusual), so the tiebreak was token efficiency against the
@@ -315,6 +329,7 @@ class GroqVerifier:
             findings=findings,
             input_tokens=response.usage.prompt_tokens,
             output_tokens=response.usage.completion_tokens,
+            price=self.PRICE,
         )
 
     def _call_with_retry(self, session: Session, tool: dict):
@@ -355,10 +370,11 @@ class HeuristicVerifier:
     API key. It happens to score well here specifically because the
     generator's discretion clause always names its addon verbatim in the
     intent text — that is a property of THIS synthetic data, not evidence
-    the approach generalises. Swap to LLMVerifier before recording any
+    the approach generalises. Swap to a real verifier before recording any
     number that goes in the README."""
 
     name = "heuristic"
+    PRICE = FREE_TIER  # no model call at all
 
     def verify(self, session: Session) -> VerifyResult:
         intent_lower = session.mandate.user_intent.lower()
@@ -379,7 +395,7 @@ class HeuristicVerifier:
                         offending_items=[item.sku],
                     )
                 )
-        return VerifyResult(findings=findings, input_tokens=0, output_tokens=0)
+        return VerifyResult(findings=findings, input_tokens=0, output_tokens=0, price=self.PRICE)
 
 
 def get_verifier() -> Verifier:

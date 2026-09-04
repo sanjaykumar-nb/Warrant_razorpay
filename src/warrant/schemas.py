@@ -88,6 +88,13 @@ class Session(BaseModel):
     # ground truth, used only for metrics — never read by the gate or verifier
     label: ViolationClass
 
+    # How hard this case is *meant* to be. "clear" cases have obvious
+    # separation; "ambiguous" ones are deliberately borderline — an add-on
+    # a reasonable person might argue is implied by the intent. Reported
+    # as a separate row so a perfect score on easy cases can't hide a poor
+    # one on hard cases.
+    difficulty: Literal["clear", "ambiguous"] = "clear"
+
     @property
     def total_paise(self) -> int:
         return sum(item.amount_paise for item in self.line_items)
