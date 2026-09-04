@@ -118,6 +118,35 @@ The trade is explicit: **4 violations missed against ₹33,188 of legitimate spe
 
 ---
 
+## Two models, independently
+
+`uv run warrant agreement` compares two models from different labs on the sessions
+both have verified. No API calls — both results are cached.
+
+```
+model A: openai/gpt-oss-20b
+model B: qwen/qwen3.8-27b
+sessions verified by both: 73
+same verdict: 65/73 = 89.0%
+
+disagreements by class:
+  clean_unusual               1/17        6%
+  scope_creep                 5/44       11%
+  clean_underspecified        2/12       17%   <- hard case
+```
+
+Disagreement concentrates in the class built to be contested rather than
+scattering at random — two independently trained models find the same cases hard.
+
+**Two honest caveats.** The overlap is 73 sessions, not the full batch: the second
+model hit its provider's daily token cap partway through, and the cache preserved
+what it had rather than discarding it. And `clean_mandatory` is absent from this
+table entirely — not because the models agree on it, but because **those sessions
+no longer reach a model at all.** The class that previously produced the highest
+disagreement was removed from the model's remit by the tax classifier.
+
+---
+
 ## The failure that shaped this project
 
 The verifier used to flag **GST on a pair of running shoes** as an unauthorised purchase. 32% of the time. At 0.85–1.0 confidence, so no threshold could filter it. The identical string "GST (18%)" was accepted once and flagged twice.
