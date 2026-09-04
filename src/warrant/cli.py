@@ -27,6 +27,7 @@ from warrant.verifier import get_verifier
 
 RESULTS_DIR = DATA_PATH.parent.parent / "results"
 FINDINGS_CACHE = RESULTS_DIR / "findings.json"
+VERIFIER_CACHE = RESULTS_DIR / "verifier_cache.json"
 
 
 def _load_or_generate() -> list[Session]:
@@ -65,8 +66,8 @@ def cmd_gate(_args: argparse.Namespace) -> None:
 def cmd_demo(_args: argparse.Namespace) -> None:
     sessions = _load_or_generate()
     verifier = get_verifier()
-    result = run_pipeline(sessions, verifier)
-    print(f"(verifier: {verifier.name})\n")
+    print(f"(verifier: {verifier.name} / {getattr(verifier, 'MODEL', 'n/a')})\n")
+    result = run_pipeline(sessions, verifier, cache_path=VERIFIER_CACHE)
     print_report(result)
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -90,7 +91,7 @@ def cmd_evidence(args: argparse.Namespace) -> None:
     else:
         print("No cached findings found — running the full pipeline once (this may call the API)...\n")
         verifier = get_verifier()
-        result = run_pipeline(sessions, verifier)
+        result = run_pipeline(sessions, verifier, cache_path=VERIFIER_CACHE)
         findings = [*result.gate_findings, *result.verifier_findings]
 
     pack = build_evidence_pack(session, findings)

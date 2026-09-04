@@ -288,7 +288,10 @@ class GroqVerifier:
     # + 5 clean_unusual), so the tiebreak was token efficiency against the
     # 6k tokens/min free cap. qwen3.6-27b burned ~1430 tok/call on verbose
     # reasoning; this one is the largest available model at ~730 tok/call.
-    MODEL = "openai/gpt-oss-120b"
+    # gpt-oss-120b exhausted its 200k tokens/day quota mid-batch. TPD is
+    # enforced per model, so this one has a separate daily budget — and it
+    # scored identically (10/10) on the discriminating sample.
+    MODEL = "qwen/qwen3.8-27b"
     MAX_RETRIES = 5
 
     def __init__(self, api_key: str) -> None:

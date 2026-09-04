@@ -79,3 +79,55 @@ def test_false_positive_cost_only_counts_clean_and_clean_unusual():
     fp_paise = false_positive_cost_paise(result)
     assert isinstance(fp_paise, int)
     assert fp_paise >= 0
+
+
+def test_pipeline_resumes_from_cache_instead_of_recalling(tmp_path):
+    """A free-tier daily token cap once killed a batch on its last calls and
+    discarded every completed result. The cache exists so a re-run resumes;
+    this asserts the second run makes zero verifier calls."""
+    sessions = generate_sessions()
+    cache = tmp_path / "verifier_cache.json"
+
+    class CountingVerifier(HeuristicVerifier):
+        def __init__(self):
+            self.calls = 0
+
+        def verify(self, session):
+            self.calls += 1
+            return super().verify(session)
+
+    first = CountingVerifier()
+    r1 = run_pipeline(sessions, first, cache_path=cache)
+    assert first.calls > 0
+    assert cache.exists()
+
+    second = CountingVerifier()
+    r2 = run_pipeline(sessions, second, cache_path=cache)
+    assert second.calls == 0, "second run should be served entirely from cache"
+
+    # and the results must be identical, not merely cheap
+    assert len(r1.verifier_findings) == len(r2.verifier_findings)
+    assert r1.final_verdict == r2.final_verdict
+
+
+def test_cache_is_invalidated_when_the_model_changes(tmp_path):
+    """Mixing results from two different models into one reported number
+    would be silently wrong, so a model change must discard the cache."""
+    sessions = generate_sessions()[:40]
+    cache = tmp_path / "verifier_cache.json"
+
+    class ModelA(HeuristicVerifier):
+        MODEL = "model-a"
+
+    class ModelB(HeuristicVerifier):
+        MODEL = "model-b"
+        def __init__(self):
+            self.calls = 0
+        def verify(self, session):
+            self.calls += 1
+            return super().verify(session)
+
+    run_pipeline(sessions, ModelA(), cache_path=cache)
+    b = ModelB()
+    run_pipeline(sessions, b, cache_path=cache)
+    assert b.calls > 0, "different model must not reuse the previous model's cache"

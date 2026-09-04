@@ -7,7 +7,9 @@ this file.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from warrant.gate import run_gate
 from warrant.schemas import Finding, Session, ViolationClass
@@ -28,7 +30,23 @@ class PipelineResult:
     final_verdict: dict[str, ViolationClass] = field(default_factory=dict)
 
 
-def run_pipeline(sessions: list[Session], verifier: Verifier) -> PipelineResult:
+def run_pipeline(
+    sessions: list[Session],
+    verifier: Verifier,
+    cache_path: Path | None = None,
+) -> PipelineResult:
+    """Gate first, then the verifier on the residual only.
+
+    Verifier results are cached per session and flushed to disk as they
+    arrive. Free-tier providers enforce a daily token cap, and hitting it
+    mid-batch previously discarded every completed call — ~199k tokens of
+    finished work lost to a 429 on the last session. With the cache, a
+    re-run skips what is already done and resumes where it stopped.
+
+    The cache key includes the model, so switching providers or models
+    correctly invalidates rather than silently mixing results from two
+    different models into one reported number.
+    """
     gate_findings, p50, p99 = run_gate(sessions)
     gate_flagged_ids = {f.session_id for f in gate_findings}
 
@@ -36,16 +54,55 @@ def run_pipeline(sessions: list[Session], verifier: Verifier) -> PipelineResult:
     # the model examines the residual, never re-litigates a rule decision.
     residual = [s for s in sessions if s.session_id not in gate_flagged_ids]
 
+    model = getattr(verifier, "MODEL", verifier.name)
+    cache: dict[str, dict] = {}
+    if cache_path and cache_path.exists():
+        raw = json.loads(cache_path.read_text(encoding="utf-8"))
+        if raw.get("model") == model:
+            cache = raw.get("entries", {})
+            print(f"  resuming: {len(cache)} sessions already verified for {model}")
+        else:
+            print(f"  cache is for a different model ({raw.get('model')}), ignoring")
+
+    def flush() -> None:
+        if cache_path:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cache_path.write_text(
+                json.dumps({"model": model, "entries": cache}, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+
     verifier_findings: list[Finding] = []
     total_cost_paise = 0
     total_projected_paise = 0
     price_label = getattr(verifier, "PRICE", None)
     price_label = price_label.label if price_label else "unknown"
-    for session in residual:
-        result = verifier.verify(session)
-        verifier_findings.extend(result.findings)
-        total_cost_paise += result.cost_paise
-        total_projected_paise += result.projected_cost_paise
+
+    for i, session in enumerate(residual):
+        if session.session_id in cache:
+            entry = cache[session.session_id]
+        else:
+            try:
+                r = verifier.verify(session)
+            except Exception:
+                flush()  # never lose completed work to a failure on a later call
+                print(f"\n  verifier failed after {len(cache)}/{len(residual)} sessions; "
+                      f"progress saved to {cache_path}. Re-run to resume.")
+                raise
+            entry = {
+                "findings": [f.model_dump(mode="json") for f in r.findings],
+                "cost_paise": r.cost_paise,
+                "projected_cost_paise": r.projected_cost_paise,
+            }
+            cache[session.session_id] = entry
+            if (i + 1) % 10 == 0:
+                flush()
+
+        verifier_findings.extend(Finding.model_validate(f) for f in entry["findings"])
+        total_cost_paise += entry["cost_paise"]
+        total_projected_paise += entry["projected_cost_paise"]
+
+    flush()
 
     final_verdict: dict[str, ViolationClass] = {}
     for f in gate_findings:
