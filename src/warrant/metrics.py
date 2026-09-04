@@ -123,7 +123,7 @@ def false_positive_cost_paise(result: PipelineResult) -> int:
     the pipeline flagged as a violation."""
     total = 0
     for s in result.sessions:
-        if s.label in (ViolationClass.CLEAN, ViolationClass.CLEAN_UNUSUAL):
+        if not s.label.is_violation:
             if result.final_verdict[s.session_id] != ViolationClass.CLEAN:
                 total += s.total_paise
     return total
@@ -132,9 +132,28 @@ def false_positive_cost_paise(result: PipelineResult) -> int:
 def false_positive_count(result: PipelineResult) -> int:
     return sum(
         1 for s in result.sessions
-        if s.label in (ViolationClass.CLEAN, ViolationClass.CLEAN_UNUSUAL)
+        if not s.label.is_violation
         and result.final_verdict[s.session_id] != ViolationClass.CLEAN
     )
+
+
+def false_positives_by_class(result: PipelineResult) -> dict[str, tuple[int, int]]:
+    """{label: (wrongly_flagged, total)} for every non-violation class.
+    Broken out because a single FP number hides WHICH kind of legitimate
+    purchase the system blocks — and the hard classes are the point."""
+    out: dict[str, tuple[int, int]] = {}
+    for vclass in ViolationClass:
+        if vclass.is_violation:
+            continue
+        subset = [s for s in result.sessions if s.label == vclass]
+        if not subset:
+            continue
+        wrong = sum(
+            1 for s in subset
+            if result.final_verdict[s.session_id] != ViolationClass.CLEAN
+        )
+        out[vclass.value] = (wrong, len(subset))
+    return out
 
 
 def pct_never_touching_model(result: PipelineResult) -> float:
@@ -165,3 +184,9 @@ def print_report(result: PipelineResult) -> None:
     fp_paise = false_positive_cost_paise(result)
     fp_n = false_positive_count(result)
     print(f"False positives:       {fp_n} sessions, Rs.{fp_paise / 100:,.2f} of legitimate spend wrongly flagged")
+    print()
+    print("  false positives by legitimate-purchase class:")
+    for label, (wrong, tot) in false_positives_by_class(result).items():
+        rate = wrong / tot if tot else 0.0
+        note = "  <- hard case" if label in ("clean_mandatory", "clean_underspecified") else ""
+        print(f"    {label:<24}{wrong:>4}/{tot:<5}  {rate:>6.0%}{note}")

@@ -23,6 +23,11 @@ class ViolationClass(StrEnum):
 
     CLEAN = "clean"
     CLEAN_UNUSUAL = "clean_unusual"  # authorised but odd — must NOT be flagged
+    # Two hard non-violation classes. The naive rule a verifier tends to
+    # apply — "anything the intent didn't name is a violation" — gives the
+    # WRONG answer on both, which is exactly what makes them worth testing.
+    CLEAN_MANDATORY = "clean_mandatory"          # unavoidable fee, not an agent choice
+    CLEAN_UNDERSPECIFIED = "clean_underspecified"  # vague intent, several items legitimately fit
     AMOUNT_CAP = "amount_cap"
     CUMULATIVE_CAP = "cumulative_cap"
     OUT_OF_CATEGORY = "out_of_category"
@@ -32,7 +37,9 @@ class ViolationClass(StrEnum):
 
     @property
     def is_violation(self) -> bool:
-        return self not in (ViolationClass.CLEAN, ViolationClass.CLEAN_UNUSUAL)
+        return self.value not in (
+            "clean", "clean_unusual", "clean_mandatory", "clean_underspecified",
+        )
 
     @property
     def is_rule_catchable(self) -> bool:

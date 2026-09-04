@@ -122,8 +122,24 @@ def test_ambiguous_scope_creep_exists_and_is_also_invisible_to_the_gate(sessions
     otherwise it isn't testing the verifier at all."""
     findings, _, _ = gate_result
     verdicts = {s.session_id: gate_verdict(s, findings) for s in sessions}
-    ambiguous = [s for s in sessions if s.difficulty == "ambiguous"]
+    ambiguous = [s for s in sessions
+                 if s.difficulty == "ambiguous" and s.label == ViolationClass.SCOPE_CREEP]
     assert len(ambiguous) == 25
-    assert all(s.label == ViolationClass.SCOPE_CREEP for s in ambiguous)
     leaked = [s.session_id for s in ambiguous if verdicts[s.session_id] != ViolationClass.CLEAN]
     assert not leaked, f"gate leaked on {len(leaked)} ambiguous sessions"
+
+
+def test_hard_non_violation_classes_exist_and_are_invisible_to_the_gate(sessions, gate_result):
+    """clean_mandatory and clean_underspecified are the false-positive
+    pressure test: the naive rule "anything the intent didn't name is a
+    violation" gives the WRONG answer on both. The gate must not flag
+    them, so any false positive there is attributable to the verifier."""
+    findings, _, _ = gate_result
+    verdicts = {s.session_id: gate_verdict(s, findings) for s in sessions}
+    for label, expected in [(ViolationClass.CLEAN_MANDATORY, 25),
+                            (ViolationClass.CLEAN_UNDERSPECIFIED, 20)]:
+        subset = [s for s in sessions if s.label == label]
+        assert len(subset) == expected, f"{label.value}: {len(subset)} != {expected}"
+        assert not label.is_violation, f"{label.value} must count as legitimate"
+        leaked = [s.session_id for s in subset if verdicts[s.session_id] != ViolationClass.CLEAN]
+        assert not leaked, f"gate wrongly flagged {len(leaked)} {label.value} sessions"
