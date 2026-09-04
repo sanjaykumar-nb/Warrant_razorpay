@@ -59,6 +59,33 @@ class LineItem(BaseModel):
     amount_paise: int = Field(ge=0)
     category: str
 
+    # Whether this charge was the AGENT's choice or an unavoidable
+    # component of the purchase. Taxes, statutory levies and mandatory
+    # fees are not the agent's decision — flagging one blocks a
+    # legitimate purchase, which was this system's single worst failure
+    # mode (32% false positives) when it had to infer this from the
+    # description string.
+    #
+    # None means "not declared" — the merchant did not tell us. The tax
+    # classifier then tries to establish it arithmetically before any
+    # model is asked to reason about it.
+    is_mandatory: bool | None = None
+
+
+class PaymentStage(StrEnum):
+    """Where a session sits in the payment lifecycle.
+
+    This matters because it decides what the system is still ABLE to do.
+    Between authorisation and capture the funds are held, not taken — so
+    an unauthorised line item can simply not be captured, without
+    blocking the legitimate part of the purchase. After capture the only
+    remedies are refund and dispute, which are weaker.
+    """
+
+    AUTHORISED = "authorised"  # funds held; full remedy available
+    CAPTURED = "captured"      # funds taken; refund only
+    SETTLED = "settled"        # money with the merchant; dispute only
+
 
 class Mandate(BaseModel):
     """What the human actually authorised, in their own words.
@@ -91,6 +118,7 @@ class Session(BaseModel):
     timestamp: datetime
     idempotency_key: str | None = None
     prior_spend_paise: int = 0  # spend already committed under this mandate before this session
+    stage: PaymentStage = PaymentStage.AUTHORISED
 
     # ground truth, used only for metrics — never read by the gate or verifier
     label: ViolationClass

@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from warrant.gate import run_gate
+from warrant.taxes import split_for_review
 from warrant.schemas import Finding, Session, ViolationClass
 from warrant.verifier import Verifier
 
@@ -27,6 +28,7 @@ class PipelineResult:
     verifier_projected_paise: int     # what it WOULD cost on a paid frontier model
     verifier_price_label: str
     verifier_calls: int
+    skipped_no_reviewable: int = 0    # sessions where tax exclusion left nothing to judge
     final_verdict: dict[str, ViolationClass] = field(default_factory=dict)
 
 
@@ -85,7 +87,20 @@ def run_pipeline(
     price_label = getattr(verifier, "PRICE", None)
     price_label = price_label.label if price_label else "unknown"
 
+    skipped_no_reviewable = 0
+
     for i, session in enumerate(residual):
+        # If every line item beyond the primary one was established as a
+        # mandatory charge, there is nothing a semantic check could
+        # legitimately flag — the primary item is what was asked for.
+        # Skipping is both cheaper and strictly more correct: it removes
+        # the model's opportunity to flag a tax, which was this system's
+        # worst failure mode.
+        reviewable, _mandatory = split_for_review(session.line_items)
+        if len(reviewable) <= 1:
+            skipped_no_reviewable += 1
+            continue
+
         if session.session_id in cache:
             entry = cache[session.session_id]
         else:
@@ -125,6 +140,7 @@ def run_pipeline(
         verifier_findings=verifier_findings,
         gate_p50_ms=p50,
         gate_p99_ms=p99,
+        skipped_no_reviewable=skipped_no_reviewable,
         verifier_cost_paise=total_cost_paise,
         verifier_projected_paise=total_projected_paise,
         verifier_price_label=price_label,
@@ -225,14 +241,20 @@ def false_positives_by_class(result: PipelineResult) -> dict[str, tuple[int, int
 
 def pct_never_touching_model(result: PipelineResult) -> float:
     total = len(result.sessions)
-    return 1 - (result.verifier_calls / total) if total else 0.0
+    if not total:
+        return 0.0
+    actually_called = result.verifier_calls - result.skipped_no_reviewable
+    return 1 - (actually_called / total)
 
 
 def print_report(result: PipelineResult) -> None:
     total = len(result.sessions)
     print(f"Sessions:              {total}")
     print(f"Gate findings:         {len(result.gate_findings)}")
-    print(f"Verifier calls:        {result.verifier_calls}  ({pct_never_touching_model(result):.0%} never touched the model)")
+    print(f"Verifier calls:        {result.verifier_calls - result.skipped_no_reviewable}  "
+          f"({pct_never_touching_model(result):.0%} never touched the model)")
+    print(f"  skipped by tax filter: {result.skipped_no_reviewable}  "
+          f"(nothing left to judge once statutory charges were excluded)")
     print(f"Gate latency:          p50={result.gate_p50_ms:.4f}ms  p99={result.gate_p99_ms:.4f}ms")
     print(f"Verifier cost (ACTUAL):    Rs.{result.verifier_cost_paise / 100:,.2f}  "
           f"[{result.verifier_price_label}]")

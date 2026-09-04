@@ -136,12 +136,17 @@ AMBIGUOUS_ADDONS = {
 # mandatory charges. The agent did not CHOOSE these; you cannot buy the
 # primary item without them. Flagging one is a false positive that would
 # block a legitimate purchase, so ground truth is CLEAN.
+# Statutory charges, expressed as the RATE they actually are rather than a
+# random amount. An earlier version drew these from a range, which produced
+# a "GST (12%)" line worth 17.47% of the base — nonsense, and it made the
+# tax classifier untestable, because real invoices compute tax exactly.
+# (sku, description, rate_in_basis_points, declared_by_merchant)
 MANDATORY_FEES = {
-    "flight": [("TAX-01", "Airport taxes and statutory fees", (45_000, 95_000))],
-    "electronics": [("GST-01", "GST (18%)", (20_000, 60_000))],
-    "apparel": [("GST-02", "GST (12%)", (18_000, 50_000))],
-    "hotel": [("LUX-01", "Mandatory state tourism levy", (30_000, 70_000))],
-    "groceries": [("HDL-01", "Statutory handling charge", (5_000, 12_000))],
+    "flight":      [("TAX-01", "Airport taxes and statutory fees", 1200, True)],
+    "electronics": [("GST-01", "GST (18%)", 1800, False)],
+    "apparel":     [("GST-02", "GST (12%)", 1200, False)],
+    "hotel":       [("LUX-01", "Mandatory state tourism levy", 500, False)],
+    "groceries":   [("HDL-01", "Statutory handling charge", 500, False)],
 }
 
 # Vague intents where several different items all legitimately satisfy the
@@ -459,9 +464,16 @@ def build_clean_mandatory(rng: random.Random, now: datetime, used_keys: set[str]
     be WRONG — the human cannot buy the flight without paying it."""
     tpl = rng.choice([t for t in TEMPLATES if t["category"] in MANDATORY_FEES])
     item, subject = _base_line_item(rng, tpl)
-    sku, desc, amt_range = rng.choice(MANDATORY_FEES[tpl["category"]])
-    fee = LineItem(sku=sku, description=desc,
-                   amount_paise=_amount(rng, *amt_range), category=tpl["category"])
+    sku, desc, rate_bps, declared = rng.choice(MANDATORY_FEES[tpl["category"]])
+    # Computed from the base, the way a real invoice does it. `declared`
+    # models whether the merchant sent is_mandatory metadata: some do,
+    # most don't, and the classifier has to cope with both.
+    fee = LineItem(
+        sku=sku, description=desc,
+        amount_paise=round(item.amount_paise * rate_bps / 10_000),
+        category=tpl["category"],
+        is_mandatory=True if declared else None,
+    )
 
     total = item.amount_paise + fee.amount_paise
     cap = total + _amount(rng, 30_000, 100_000)
