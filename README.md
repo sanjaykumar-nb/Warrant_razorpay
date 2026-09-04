@@ -55,6 +55,65 @@ to the model, and so is every false positive below.
 Model: `openai/gpt-oss-20b` on Groq's free tier. Reproduce with
 `uv run warrant demo`.
 
+> **Read the 100% rows with suspicion — I do.** The five gate classes are a
+> self-test: the generator creates an `amount_cap` violation by putting the
+> total over the cap, and the gate detects it by comparing the total to the
+> cap. Same condition on both sides, so 100% is arithmetic, not capability.
+> The numbers worth defending are the verifier rows and the false-positive
+> table, where the generator and detector share no code. That is exactly
+> where the score stops being perfect.
+>
+> **The data is entirely synthetic**, and for this problem it has to be:
+> there is no public dataset of AI-agent purchases, because the phenomenon
+> barely exists yet. That is a real limitation, not a shortcut — see
+> [Limitations](#limitations).
+
+---
+
+## Is the model actually necessary? Measured, not asserted
+
+`uv run warrant baseline` runs the same 340 sessions through a keyword-matching
+verifier — no model, pure substring logic — and compares.
+
+| | keyword baseline | gpt-oss-20b |
+|---|---:|---:|
+| scope creep caught | **60/60 (100%)** | 58/60 (97%) |
+| false positives | 45 sessions | **8 sessions** |
+| legitimate spend blocked | **₹1,43,052** | **₹20,881** |
+| clean_mandatory wrongly flagged | 25/25 (100%) | 8/25 (32%) |
+| clean_underspecified wrongly flagged | 20/20 (100%) | **0/20 (0%)** |
+
+**The keyword matcher catches more violations than the model.** It also blocks
+**6.9× more legitimate spend** doing it — flagging every single mandatory tax
+and every underspecified basket, because it cannot tell an unrequested add-on
+from an unavoidable one.
+
+The trade is explicit: **2 violations missed, ₹1,22,171 of legitimate spend not
+wrongly blocked.** That trade is the entire argument for using a model here,
+and it is a measurement rather than a claim.
+
+## Two models, independently
+
+`uv run warrant agreement` compares two models from different labs on the 170
+sessions both have verified. No API calls — both results are cached.
+
+```
+same verdict: 146/170 = 85.9%
+
+disagreements by class:
+  clean                       1/77        1%
+  clean_unusual               0/12        0%
+  scope_creep                 6/46       13%
+  clean_underspecified        6/15       40%   <- hard case
+  clean_mandatory            11/20       55%   <- hard case
+```
+
+Disagreement is **concentrated in the classes built to be contested**, not
+scattered at random. Two independently trained models find the same cases
+hard — evidence that the difficulty tiers are real rather than asserted, and
+that the mandatory-fee failure below is a property of the task, not one
+model's quirk.
+
 ---
 
 ## What the failures actually show
@@ -119,6 +178,8 @@ uv run warrant demo
 | `uv run warrant generate` | regenerate the 340-session batch from a committed seed |
 | `uv run warrant gate` | deterministic checks only — no API key, no cost |
 | `uv run warrant demo` | full pipeline + every metric above |
+| `uv run warrant baseline` | rule-based baseline vs semantic verifier |
+| `uv run warrant agreement` | inter-model agreement across cached runs |
 | `uv run warrant evidence <session_id>` | evidence pack for one session |
 | `uv run pytest -q` | 48 tests |
 
@@ -167,6 +228,17 @@ wrong. **This is the case the model gets wrong 32% of the time** — see above.
 ---
 
 ## Limitations
+
+**There is no real data here, and none exists to use.** Every session is
+generated. No public dataset of AI-agent purchases exists, because agentic
+commerce is barely deployed — this is not a case of ignoring an available
+dataset in favour of a convenient one. It does mean nothing here demonstrates
+performance on real agent traffic.
+
+**Five of the seven metric rows are self-tests.** The gate classes score 100%
+because the generator and the detector apply the same condition. They prove
+the code is correct; they are not evidence of capability. Treat the verifier
+rows and the false-positive table as the real results.
 
 **The ground truth is synthetic and the rule behind it is simple.** Sessions
 are generated, not observed. The labelling rule — *flag what the intent did

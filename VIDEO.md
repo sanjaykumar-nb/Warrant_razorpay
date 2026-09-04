@@ -66,7 +66,26 @@ Walk the rows in this order:
    > token volume would cost on a paid frontier model — that's the scaling
    > number, and it is not spend I incurred."
 
-## 3:00–4:10 · The two closing results — this is the part that lands
+## 2:35–3:15 · Is the model even necessary? Prove it
+
+`uv run warrant baseline`. This is the strongest 40 seconds in the video —
+do not cut it.
+
+> "Obvious question: do you need a language model for this, or would a
+> keyword matcher do? So I measured it.
+>
+> The keyword baseline catches **more** violations than the model — 60 out
+> of 60, versus 58. But look at what it costs: it wrongly blocks 45
+> legitimate purchases, ₹1.43 lakh of real spend. It flags **every single**
+> mandatory tax and **every** underspecified basket, because it can't tell
+> an add-on nobody asked for from a tax you can't avoid.
+>
+> The model blocks ₹20,881. That's **6.9 times less**. The trade is two
+> violations missed against ₹1.2 lakh of legitimate spend not blocked —
+> and that trade is the whole argument for the model. It's a measurement,
+> not a claim."
+
+## 3:15–4:20 · The two closing results — this is the part that lands
 
 **First: the discretion clause.**
 
@@ -101,7 +120,7 @@ Show a `clean_unusual` session.
 **Do not skip this.** Volunteering your failure mode is the strongest thirty
 seconds in the video.
 
-## 4:10–4:40 · Evidence pack
+## 4:20–4:40 · Evidence pack
 
 `uv run warrant evidence <session_id>` on a flagged session.
 
@@ -113,11 +132,16 @@ seconds in the video.
 
 > "Every number regenerates from one command against a committed seed.
 >
-> The scores on the clear-cut classes are high because the ground-truth rule
-> is consistent — flag what the intent didn't authorise. What that measures
-> is that the pipeline works and the model applies a stated policy reliably.
-> What it doesn't measure is genuinely contested cases. Building that harder
-> benchmark is the next thing I'd do."
+> Two things I'd want you to know before you judge the table. The five
+> gate rows at 100% are a self-test — the generator makes a violation by
+> putting the amount over the cap, and the gate catches it by checking the
+> amount against the cap. That proves there's no bug, not that it's clever.
+> The rows I'd defend are the verifier ones, where nothing is shared.
+>
+> And it's entirely synthetic data — because there is no public dataset of
+> AI-agent purchases. The phenomenon barely exists yet. That's the honest
+> limit: I've shown the pipeline works and where it breaks, not that it
+> survives production traffic."
 
 ---
 
@@ -126,5 +150,7 @@ seconds in the video.
 - Lead with the ₹850 nobody asked for. Not your name, not the track.
 - Say "the model is never in the money path" — once, clearly.
 - Show the false positives. Do not round them away.
+- Run `warrant baseline` on camera. It is the strongest evidence you have.
+- Say the 100% rows are a self-test BEFORE a judge works it out themselves.
 - Never say "100% accurate." Say what was measured and on which class.
 - Read the real table off the screen. Don't recite from memory.

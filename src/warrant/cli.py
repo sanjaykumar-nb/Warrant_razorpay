@@ -18,12 +18,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from warrant.baseline import inter_model_agreement, print_comparison, summarise
 from warrant.evidence import build_evidence_pack
 from warrant.gate import gate_verdict, run_gate
 from warrant.generate import DATA_PATH, generate_sessions
 from warrant.metrics import print_report, run_pipeline
 from warrant.schemas import Finding, Session
-from warrant.verifier import get_verifier
+from warrant.verifier import HeuristicVerifier, get_verifier
 
 RESULTS_DIR = DATA_PATH.parent.parent / "results"
 FINDINGS_CACHE = RESULTS_DIR / "findings.json"
@@ -98,6 +99,30 @@ def cmd_evidence(args: argparse.Namespace) -> None:
     print(json.dumps(pack, indent=2, ensure_ascii=False))
 
 
+
+def cmd_baseline(_args: argparse.Namespace) -> None:
+    """Compare a rule-based keyword verifier against the semantic one on
+    the same batch. Uses the cached model results, so this costs nothing
+    and needs no API key."""
+    sessions = _load_or_generate()
+
+    heuristic_result = run_pipeline(sessions, HeuristicVerifier())
+    baseline = summarise(heuristic_result, "keyword baseline")
+
+    verifier = get_verifier()
+    model_result = run_pipeline(sessions, verifier, cache_path=VERIFIER_CACHE)
+    model = summarise(model_result, getattr(verifier, "MODEL", verifier.name).split("/")[-1])
+
+    print_comparison(baseline, model)
+
+
+
+def cmd_agreement(_args: argparse.Namespace) -> None:
+    sessions = _load_or_generate()
+    by_id = {s.session_id: s for s in sessions}
+    print(inter_model_agreement(RESULTS_DIR, by_id))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="warrant")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -105,6 +130,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("generate", help="regenerate the synthetic session batch").set_defaults(func=cmd_generate)
     sub.add_parser("gate", help="run the deterministic gate only").set_defaults(func=cmd_gate)
     sub.add_parser("demo", help="run the full pipeline and print every metric").set_defaults(func=cmd_demo)
+    sub.add_parser("baseline", help="compare the rule-based baseline against the semantic verifier").set_defaults(func=cmd_baseline)
+    sub.add_parser("agreement", help="inter-model agreement across cached runs").set_defaults(func=cmd_agreement)
 
     ev = sub.add_parser("evidence", help="print the evidence pack for one session")
     ev.add_argument("session_id")
