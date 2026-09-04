@@ -528,7 +528,18 @@ document.getElementById("run").addEventListener("click", async ()=>{
       '<div class="rem"><div class="top"><span class="act full">capture full</span></div><p>Everything charged was either what was asked for, or unavoidable.</p></div>';
     return;
   }
-  if(!sampleFn){R.innerHTML=html+'<div class="find"><p>The semantic check needs Claude, unavailable in this view.</p></div>';return;}
+  if(!sampleFn){
+    R.innerHTML = html + '<div class="note" style="margin-top:0">'+
+      '<b>Stages 1 and 2 just ran here in your browser</b> — the gate and the '+
+      'statutory-charge classifier are pure arithmetic, so they need no model and '+
+      'no API key.<br><br>'+
+      'Stage 3 asks a language model, which this hosted page cannot do: shipping an '+
+      'API key in a public page would be the security bug this project exists to '+
+      'catch. Run <span class="mono">uv run warrant demo</span> from the repo for '+
+      'the full pipeline, or open the <b>Review queue</b> — those are real verdicts '+
+      'from a completed run.</div>';
+    return;
+  }
 
   R.innerHTML=html+stage("wait","3 · semantic verifier","thinking…","Comparing the stated intent against each remaining line item.");
   const lines=rest.map((i,n)=>"  SKU-"+(n+1)+": "+i.d+" (Rs."+(i.a/100).toFixed(2)+")").join("\n");
@@ -570,6 +581,6 @@ document.getElementById("run").addEventListener("click", async ()=>{
   try{ sampleFn = await window.claude?.use?.("sample"); }catch(_){ sampleFn=null; }
   document.getElementById("hint").textContent = sampleFn
     ? "gate and tax filter run locally; the semantic step asks Claude"
-    : "semantic step unavailable in this view — gate and tax filter still run";
+    : "hosted copy: gate + tax classifier run here; the semantic step needs the CLI";
 })();
 </script>
