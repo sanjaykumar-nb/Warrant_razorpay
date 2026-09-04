@@ -127,3 +127,19 @@ def test_summary_reports_money_protected():
     out = summarise([decide(s, [finding("INS")])])
     assert "partial_capture" in out
     assert "450.00" in out
+
+
+def test_findings_from_other_sessions_are_ignored():
+    """Callers pass the whole batch's findings, so decide() must filter by
+    session as well as by detector. Without this, every session inherits
+    every other session's findings — which showed up as all 340 sessions
+    reporting partial_capture on a batch with 8 real findings."""
+    s = session([li("A", 780_000)])
+    other = Finding(
+        session_id="SOMEONE-ELSE", violation=ViolationClass.SCOPE_CREEP,
+        detected_by="verifier", confidence=0.99, reason="not mine",
+        offending_items=["ZZ"],
+    )
+    r = decide(s, [other])
+    assert r.action is Action.CAPTURE_FULL
+    assert r.disputed_paise == 0

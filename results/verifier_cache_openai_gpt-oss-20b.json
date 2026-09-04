@@ -2058,6 +2058,41 @@
       "findings": [],
       "cost_paise": 0,
       "projected_cost_paise": 25
+    },
+    "S-USP-162035": {
+      "findings": [],
+      "cost_paise": 0,
+      "projected_cost_paise": 23
+    },
+    "S-USP-123060": {
+      "findings": [],
+      "cost_paise": 0,
+      "projected_cost_paise": 29
+    },
+    "S-USP-235983": {
+      "findings": [],
+      "cost_paise": 0,
+      "projected_cost_paise": 29
+    },
+    "S-USP-725751": {
+      "findings": [],
+      "cost_paise": 0,
+      "projected_cost_paise": 40
+    },
+    "S-USP-791369": {
+      "findings": [],
+      "cost_paise": 0,
+      "projected_cost_paise": 36
+    },
+    "S-USP-677344": {
+      "findings": [],
+      "cost_paise": 0,
+      "projected_cost_paise": 20
+    },
+    "S-USP-628516": {
+      "findings": [],
+      "cost_paise": 0,
+      "projected_cost_paise": 21
     }
   }
 }

@@ -74,7 +74,14 @@ def decide(session: Session, findings: list[Finding]) -> Remediation:
     and the worst outcome for a false positive is that one line is not
     captured — recoverable, and far cheaper than a declined transaction.
     """
-    verifier_findings = [f for f in findings if f.detected_by == "verifier"]
+    # Filter by session as well as by detector. Callers routinely pass the
+    # whole batch's findings, and without the session_id check every
+    # session inherits every other session's findings — which showed up
+    # as all 340 sessions reporting partial_capture.
+    verifier_findings = [
+        f for f in findings
+        if f.detected_by == "verifier" and f.session_id == session.session_id
+    ]
     total = session.total_paise
 
     if not verifier_findings:

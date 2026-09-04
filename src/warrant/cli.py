@@ -19,11 +19,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from warrant.annotate import build_items, load_annotations, report, run_session
-from warrant.baseline import inter_model_agreement, print_comparison, summarise
+from warrant.baseline import inter_model_agreement, print_comparison
+from warrant.baseline import summarise as summarise_comparison
 from warrant.evidence import build_evidence_pack
 from warrant.gate import gate_verdict, run_gate
 from warrant.generate import DATA_PATH, generate_sessions
 from warrant.metrics import print_report, run_pipeline
+from warrant.remediation import decide
+from warrant.remediation import summarise as summarise_remediation
 from warrant.schemas import Finding, Session
 from warrant.verifier import HeuristicVerifier, get_verifier
 
@@ -82,6 +85,9 @@ def cmd_demo(_args: argparse.Namespace) -> None:
     )
     print(f"\nCached {len(all_findings)} findings -> {FINDINGS_CACHE}")
 
+    print()
+    print(summarise_remediation([decide(sess, all_findings) for sess in sessions]))
+
 
 def cmd_evidence(args: argparse.Namespace) -> None:
     sessions = _load_or_generate()
@@ -110,11 +116,11 @@ def cmd_baseline(_args: argparse.Namespace) -> None:
     sessions = _load_or_generate()
 
     heuristic_result = run_pipeline(sessions, HeuristicVerifier())
-    baseline = summarise(heuristic_result, "keyword baseline")
+    baseline = summarise_comparison(heuristic_result, "keyword baseline")
 
     verifier = get_verifier()
     model_result = run_pipeline(sessions, verifier, cache_path=VERIFIER_CACHE)
-    model = summarise(model_result, getattr(verifier, "MODEL", verifier.name).split("/")[-1])
+    model = summarise_comparison(model_result, getattr(verifier, "MODEL", verifier.name).split("/")[-1])
 
     print_comparison(baseline, model)
 
