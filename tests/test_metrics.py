@@ -99,7 +99,10 @@ def test_pipeline_resumes_from_cache_instead_of_recalling(tmp_path):
     first = CountingVerifier()
     r1 = run_pipeline(sessions, first, cache_path=cache)
     assert first.calls > 0
-    assert cache.exists()
+    # the cache file is namespaced per model, so the written path is not
+    # the bare path we passed in
+    written = list(tmp_path.glob("verifier_cache_*.json"))
+    assert len(written) == 1, f"expected one per-model cache file, got {written}"
 
     second = CountingVerifier()
     r2 = run_pipeline(sessions, second, cache_path=cache)
