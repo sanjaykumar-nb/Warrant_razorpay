@@ -12,6 +12,8 @@ Razorpay AI Buildathon · **Track 02 — AI Risk Manager** · strictly defence-o
 
 **[Live results console →](https://claude.ai/code/artifact/efc615e0-708a-492a-9a8e-b7deea2fef63)** — browse the real flagged purchases, the model's reasoning on each, and where it fails.
 
+**[Try it live →](https://claude.ai/code/artifact/e5efc7f8-860d-4fb3-adf9-faa0059e4094)** — type in a purchase and watch the gate and the semantic check run on it.
+
 ---
 
 ## Results
