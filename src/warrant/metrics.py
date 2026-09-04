@@ -172,12 +172,15 @@ def class_metrics(result: PipelineResult) -> list[ClassMetric]:
             for tier in tiers:
                 subset = [s for s in labelled if s.difficulty == tier]
                 caught = sum(1 for s in subset if result.final_verdict[s.session_id] == vclass)
+                # False positives belong to the CLASS, not to a difficulty
+                # tier — attributing them to whichever tier sorts first
+                # reads as if that tier caused them, which is wrong. They
+                # are reported in the per-class breakdown below instead.
                 metrics.append(ClassMetric(
                     label=f"{vclass.value} ({tier})",
                     total=len(subset),
                     caught=caught,
-                    # false positives belong to the class, not a tier — report once
-                    false_positives=fp if tier == tiers[0] else 0,
+                    false_positives=-1,  # -1 renders as "-"
                 ))
     return metrics
 
@@ -238,10 +241,11 @@ def print_report(result: PipelineResult) -> None:
     print(f"  ^ projection only - NOT spend incurred on this run")
     print()
 
-    print(f"{'class':<18}{'total':>7}{'caught':>8}{'recall':>9}{'fp':>6}")
+    print(f"{'class':<26}{'total':>7}{'caught':>8}{'recall':>9}{'fp':>6}")
     for m in class_metrics(result):
         marker = " *" if m.label.startswith("scope_creep") else ""
-        print(f"{m.label:<18}{m.total:>7}{m.caught:>8}{m.recall:>9.0%}{m.false_positives:>6}{marker}")
+        fp_cell = "-" if m.false_positives < 0 else str(m.false_positives)
+        print(f"{m.label:<26}{m.total:>7}{m.caught:>8}{m.recall:>9.0%}{fp_cell:>6}{marker}")
     print("  * scope_creep is caught by the verifier alone — 0% of it is visible to the deterministic gate")
     print()
 

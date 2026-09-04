@@ -1,7 +1,7 @@
 # 5-minute pitch — shot list
 
-Screen recording with voiceover. **No slides.** Numbers in `[brackets]` get
-filled from the final `uv run warrant demo` output before recording.
+Screen recording with voiceover. **No slides.** All numbers below are the
+real output of `uv run warrant demo` (340 sessions, `openai/gpt-oss-20b`).
 
 ---
 
@@ -43,8 +43,8 @@ Name the loss class out loud: **agent-mediated unauthorised spend.**
 Show the diagram from ARCHITECTURE.md.
 
 > "Deterministic gate first — five rule checks, pure functions,
-> `[p99]`ms at p99. Whatever survives the gate is the only thing the model
-> sees. `[X]%` of sessions never reach a model at all.
+> 0.02ms at p99. Whatever survives the gate is the only thing the model
+> sees. 29% of sessions never reach a model at all.
 >
 > The model fills a fixed schema. It has no tool that moves money. It cannot
 > execute anything — it returns a list of findings, and that's the whole
@@ -58,10 +58,10 @@ Terminal. `uv run warrant demo`. Let the real table appear.
 
 Walk the rows in this order:
 
-1. The five rule classes — `[100%]` recall, gate only, no model calls.
-2. **scope_creep** — `[N]` cases, caught by the verifier alone. Point out
+1. The five rule classes — 100% recall, gate only, no model calls.
+2. **scope_creep** — 60 cases (35 clear + 25 ambiguous), caught by the verifier alone. Point out
    the gate catches **zero** of these. That is a regression test, not a claim.
-3. **Cost:** ₹0.00 actual, `[₹X]` projected at paid-model rates.
+3. **Cost:** ₹0.00 actual, ₹69.49 projected at paid-model rates.
    > "Zero, because it runs on a free tier. The projection is what the same
    > token volume would cost on a paid frontier model — that's the scaling
    > number, and it is not spend I incurred."
@@ -76,8 +76,8 @@ Show a `clean_unusual` session.
 > reasonable."*
 
 > "The agent added breakfast. A keyword matcher flags 'add-on' and is wrong —
-> the human authorised exactly that call. `[0]` false positives on `[25]`
-> of these."
+> the human authorised exactly that call. **Zero** false positives across all
+> 25 of these."
 
 **Second: where it actually fails.** Show `clean_mandatory`.
 
@@ -85,10 +85,18 @@ Show a `clean_unusual` session.
 > can't book the hotel without paying the levy. Flagging one blocks a
 > legitimate purchase.
 >
-> It gets GST right. It flags 'Mandatory state tourism levy' as scope creep.
-> `[N]` false positives out of `[25]`, `[₹X]` of legitimate spend wrongly
-> held. It recognises familiar tax labels and not unfamiliar statutory ones —
-> and that's the honest limit of what I built."
+> **8 false positives out of 25 — 32% — ₹20,881 of legitimate spend wrongly
+> held.**
+>
+> And the interesting part is *how* it fails. It never once flagged 'Airport
+> taxes and statutory fees' — the wording that spells out it's unavoidable.
+> But the identical string 'GST 18%' it accepted once and flagged twice.
+> That's not a knowledge gap about what GST is. It's the absence of a stable
+> policy on mandatory charges — and it showed up on all three models I
+> tested, so it's a property of the task, not one model's quirk.
+>
+> The fix isn't a better prompt. Mandatory charges need to be declared as
+> line-item metadata instead of inferred from a description string."
 
 **Do not skip this.** Volunteering your failure mode is the strongest thirty
 seconds in the video.
