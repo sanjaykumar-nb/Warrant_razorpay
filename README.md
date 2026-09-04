@@ -222,20 +222,63 @@ Cost (ACTUAL):           ₹0.00      [Groq free tier]
 
 ## Is a language model actually necessary here?
 
-Worth asking directly, since a model is the expensive, slow, non-deterministic part. `uv run warrant baseline` runs the same 340 sessions through a keyword matcher instead.
+The honest answer is narrower than "yes", and worth stating precisely.
+
+`uv run warrant baseline` runs the same 340 sessions through a keyword matcher.
 
 | | keyword rules | language model |
 |---|---:|---:|
 | unrequested add-ons caught | **60/60 (100%)** | 56/60 (93%) |
 | legitimate purchases wrongly flagged | 20 | **0** |
-| **legitimate spend wrongly blocked** | **₹33,188** | **₹0** |
-| vague requests wrongly flagged | 20/20 | **0/20** |
+| **legitimate spend wrongly held** | **₹33,188** | **₹0** |
 
-**The keyword matcher catches more violations than the model.** It also blocks ₹33,188 of real customer money doing it, because it can't tell a vague-but-legitimate basket (*"stock the office pantry"* → tea, biscuits, cups) from an unrequested add-on.
+**The keyword matcher catches more.** So why not just use it?
 
-The trade is explicit: **4 violations missed, against ₹33,188 of legitimate spend not wrongly held.**
+**Because its 100% isn't earned.** It flags **80% of every non-primary line item it
+sees** — 100 out of 125. That isn't detection, it's a blanket rule that rejects
+anything not literally named in the request. Recall is trivial to max out: flag
+everything. The only question that matters is what being wrong costs.
 
-That comparison is the strongest evidence here, because it **survives the data being synthetic** — both approaches saw identical sessions, so any unrealism in the data affects both equally and cancels out.
+**And being wrong costs 71:1.**
+
+| | |
+|---|---:|
+| Value of the 4 violations the model missed | **₹464** |
+| Legitimate customer money the keyword matcher holds | **₹33,188** |
+
+It holds **₹71 of a real customer's money for every ₹1 of violation** it catches that
+the model doesn't. Twenty customers get a wrong charge adjustment to recover ₹464 of
+add-ons. In payments, that system gets switched off within a month.
+
+### Where the model's advantage actually is — and isn't
+
+After the tax classifier, the edge narrowed to exactly one class:
+
+| | keyword | model |
+|---|---:|---:|
+| ordinary purchases | 0/110 | 0/110 |
+| discretion granted | 0/25 | 0/25 |
+| statutory charges | **0/25** | 0/25 |
+| **vague requests** | **20/20 wrong** | **0/20** |
+
+The keyword matcher used to fail on taxes too — **that was fixed with arithmetic, not
+AI.** So the model's entire remaining advantage is understanding a request that didn't
+name what it wanted.
+
+> *"Stock the office pantry for the week"* → tea, biscuits, paper cups.
+>
+> Nothing was named. A rule sees three unnamed items and flags all three. Recognising
+> that those three things **are** what "stock the pantry" means would otherwise need a
+> product ontology, category mappings and per-merchant taxonomies — hand-maintained
+> forever, broken constantly.
+
+**That is the honest scope of the claim.** AI isn't needed for most of this problem —
+caps, categories and taxes are arithmetic, and they were moved there deliberately. It
+is needed for the part where the person didn't say exactly what they wanted, which is
+most of how people actually talk to an assistant.
+
+This comparison also **survives the data being synthetic**, because both approaches saw
+identical sessions — any unrealism affects both equally and cancels.
 
 ---
 
