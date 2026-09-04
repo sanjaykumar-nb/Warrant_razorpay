@@ -1,0 +1,40 @@
+warning: The `tool.uv.dev-dependencies` field (used in `pyproject.toml`) is deprecated and will be removed in a future release; use `dependency-groups.dev` instead
+(verifier: groq / openai/gpt-oss-20b)
+
+Sessions:              340
+Gate findings:         100
+Verifier calls:        105  (69% never touched the model)
+  skipped by tax filter: 135  (nothing left to judge once statutory charges were excluded)
+Gate latency:          p50=0.0069ms  p99=0.0326ms
+Verifier cost (ACTUAL):    Rs.0.00  [free tier (no per-token charge)]
+  projected on paid model: Rs.34.67  (Rs.0.1020/session at Claude Sonnet 5 rates)
+  ^ projection only - NOT spend incurred on this run
+
+class                       total  caught   recall    fp
+amount_cap                     25      25     100%     0
+cumulative_cap                 20      20     100%     0
+out_of_category                20      20     100%     0
+expired_window                 15      15     100%     0
+duplicate                      20      20     100%     0
+scope_creep (ambiguous)        25      22      88%     - *
+scope_creep (clear)            35      34      97%     - *
+  * scope_creep is caught by the verifier alone — 0% of it is visible to the deterministic gate
+
+False positives:       0 sessions, Rs.0.00 of legitimate spend wrongly flagged
+
+  false positives by legitimate-purchase class:
+    clean                      0/110        0%
+    clean_unusual              0/25         0%
+    clean_mandatory            0/25         0%  <- hard case
+    clean_underspecified       0/20         0%  <- hard case
+
+Cached 164 findings -> E:\downloads\projects\warrant\results\findings.json
+
+Remediation actions taken
+
+    capture_full              284
+    partial_capture            56
+
+  Customer money protected: Rs.17,591.45
+  No purchase was blocked outright. A wrong finding costs one line
+  item, never the whole transaction.
