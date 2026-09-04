@@ -1,156 +1,179 @@
 # 5-minute pitch — shot list
 
-Screen recording with voiceover. **No slides.** All numbers below are the
-real output of `uv run warrant demo` (340 sessions, `openai/gpt-oss-20b`).
+Screen recording with voiceover. **No slides.** Every number below is the real
+output of `uv run warrant demo` on 340 sessions.
+
+**Console:** https://sanjaykumar-nb.github.io/Warrant_razorpay/
 
 ---
 
-## 0:00–0:25 · The gap, on screen, no intro
+## Before you hit record
 
-Split screen. Left: the mandate, as the human wrote it.
+- [ ] Open the console in a browser tab. Check the **Review queue** loads with items.
+- [ ] Terminal open at the repo, font size up.
+- [ ] Run `uv run warrant demo` once so it's warm — it replays from cache in seconds.
+- [ ] Close Slack, email, notifications.
+- [ ] Practise the first 25 seconds twice. Nothing else needs rehearsing.
 
-> *"Book me a flight to Delhi, under ₹8,000."*
+---
 
-Right: what the agent actually bought.
+## 0:00 – 0:25 · The gap
 
+**Screen:** console, **Review queue**, top of page.
+
+Say it over the queue, no intro, no name, no title card:
+
+> "This is a queue of purchases an AI shopping assistant made on someone's behalf —
+> where it bought something the person never asked for.
+>
+> Somebody said *book me a flight to Delhi under eight thousand rupees*. The agent
+> booked the flight at seven thousand eight hundred — and added travel insurance,
+> and seat selection. Every fraud check passes. The card is valid, the merchant is
+> real, the customer's own agent started it.
+>
+> **And a thousand rupees of that was never authorised.**"
+
+## 0:25 – 1:20 · One purchase, end to end
+
+**Screen:** click **`S-CRP-668092`** in the queue.
+
+> *"Order a USB-C charger, budget up to ₹4,363."* — and it bought the charger,
+> **plus expedited shipping, plus an extended warranty.**
+
+Point at the two red rows, then the reasoning underneath:
+
+> "It tells you which items, why, its confidence, and the phrase from the original
+> request it checked against. That's what a merchant needs to defend the charge."
+
+Now scroll to the recommended action:
+
+> "And here's the part I care about most. It does **not** block the purchase.
+> It captures **₹3,192 of ₹3,645** — the charger goes through, the two add-ons are
+> simply not taken.
+>
+> Between authorisation and capture, the money is *held*, not taken. A check takes
+> a second or two. That window is much longer. So this is never block-or-allow —
+> **a wrong decision costs one line item, never the transaction.**"
+
+Click **Apply this action.** The queue count drops.
+
+## 1:20 – 2:10 · Where it used to fail — the best 50 seconds
+
+**Screen:** click **Correctly cleared** in the sidebar, then the **Statutory charge** tab.
+Open **`S-MND-994455`**.
+
+> "Not flagging things wrongly matters just as much. This one is a winter jacket
+> plus **GST at 12%**."
+
+Point at the teal row and the line underneath it — *12% of the taxable base, and named as statutory*.
+
+> "Two weeks ago this system flagged that. It told you **GST was an unauthorised
+> purchase.** You cannot buy anything in India without paying GST. It did that
+> **32% of the time**, at 0.85 to 1.0 confidence — so no confidence threshold would
+> have saved it.
+>
+> Then I tested it on three models from two different labs. **All three failed the
+> same way.** That told me it wasn't the model. It was the question: I was asking a
+> language model to *guess, from a text string,* whether a charge was the agent's
+> choice. That isn't answerable from text.
+>
+> So I stopped asking. A twelve percent GST line is exactly twelve percent of the
+> base — that's arithmetic. It's settled before the model is ever involved, and
+> anything identified as statutory is removed from review entirely.
+>
+> **Thirty-two percent to zero. And it halved the cost, because a third of sessions
+> stopped needing a model at all.**"
+
+## 2:10 – 2:50 · Do you even need AI for this?
+
+**Screen:** terminal.
+
+```bash
+uv run warrant baseline
 ```
-Flight to Delhi        ₹7,800
-Travel insurance         ₹450   ← nobody asked for this
-Seat selection           ₹600   ← or this
-                       ───────
-                       ₹8,850
+
+> "Fair question, so I measured it. Same 340 sessions through a keyword matcher.
+>
+> The keyword matcher catches **more** violations than the model — sixty out of
+> sixty against fifty-six. But it blocks **₹33,188** of legitimate customer money
+> doing it. The model blocks **zero.**
+>
+> It flags every vague basket — *stock the office pantry* becomes tea, biscuits,
+> cups, and it flags all of them. The trade is four violations missed against
+> thirty-three thousand rupees of real spend not wrongly held.
+>
+> That comparison holds even though my data is synthetic, because both approaches
+> saw identical sessions."
+
+## 2:50 – 3:30 · It's a real system
+
+**Screen:** terminal.
+
+```bash
+uv run pytest -q
+uv run warrant demo
 ```
 
-> "A rule engine catches the total. **Nothing but a language model catches
-> that nobody asked for insurance.** That gap is what this project detects."
-
-**Do not** open with your name, the track name, or a title card. Open here.
-
-## 0:25–1:00 · Why this is a real loss class
-
-> "When an AI agent spends on your behalf, two things can go wrong. It can
-> break a hard limit — over budget, wrong category, expired mandate, charged
-> twice. Those are rules, and rules catch them.
+> "Eighty-one tests. Every number regenerates from a committed seed with one command
+> — you can reproduce all of this without an API key.
 >
-> Or it can buy something you simply never asked for, inside every limit you
-> set. No rule sees that. It shows up as a support ticket, or a chargeback
-> sixty days later."
+> Notice: **69% of sessions never reach a language model.** Five deterministic rules
+> handle caps, categories, expiry and duplicates in **0.03 milliseconds** — fast
+> enough to sit inline in a real checkout. The model only sees what genuinely needs
+> judgment, and it fills a fixed schema. **It has no tool that moves money.**"
 
-Name the loss class out loud: **agent-mediated unauthorised spend.**
+## 3:30 – 4:20 · What I'd want you to distrust
 
-## 1:00–1:40 · Architecture, one breath
+**Screen:** console → **Performance**.
 
-Show the diagram from ARCHITECTURE.md.
+Do not skip this. It is the strongest part.
 
-> "Deterministic gate first — five rule checks, pure functions,
-> 0.02ms at p99. Whatever survives the gate is the only thing the model
-> sees. 29% of sessions never reach a model at all.
+> "Five of these seven rows are at 100%, and those five are close to meaningless.
+> My generator creates an over-cap violation by putting the amount over the cap, and
+> my gate detects it by comparing the amount to the cap. **Same condition on both
+> sides.** That's arithmetic, not capability — anything less would be a bug.
 >
-> The model fills a fixed schema. It has no tool that moves money. It cannot
-> execute anything — it returns a list of findings, and that's the whole
-> surface."
-
-Say **"the model is never in the money path"** out loud.
-
-## 1:40–3:00 · The live run
-
-Terminal. `uv run warrant demo`. Let the real table appear.
-
-Walk the rows in this order:
-
-1. The five rule classes — 100% recall, gate only, no model calls.
-2. **scope_creep** — 60 cases (35 clear + 25 ambiguous), caught by the verifier alone. Point out
-   the gate catches **zero** of these. That is a regression test, not a claim.
-3. **Cost:** ₹0.00 actual, ₹69.49 projected at paid-model rates.
-   > "Zero, because it runs on a free tier. The projection is what the same
-   > token volume would cost on a paid frontier model — that's the scaling
-   > number, and it is not spend I incurred."
-
-## 2:35–3:15 · Is the model even necessary? Prove it
-
-`uv run warrant baseline`. This is the strongest 40 seconds in the video —
-do not cut it.
-
-> "Obvious question: do you need a language model for this, or would a
-> keyword matcher do? So I measured it.
+> The rows I'd defend are the two model rows, 97% and 88%, and the false-positive
+> table — because there the generator and the detector share no code.
 >
-> The keyword baseline catches **more** violations than the model — 60 out
-> of 60, versus 58. But look at what it costs: it wrongly blocks 45
-> legitimate purchases, ₹1.43 lakh of real spend. It flags **every single**
-> mandatory tax and **every** underspecified basket, because it can't tell
-> an add-on nobody asked for from a tax you can't avoid.
+> And it's **entirely synthetic data.** There's no public dataset of AI-agent
+> purchases, because the behaviour barely exists yet. So I make no claim about
+> real-world accuracy. What I measured is the comparison, and that survives.
 >
-> The model blocks ₹20,881. That's **6.9 times less**. The trade is two
-> violations missed against ₹1.2 lakh of legitimate spend not blocked —
-> and that trade is the whole argument for the model. It's a measurement,
-> not a claim."
+> It also still misses things. Four cases — it decided reusable carry bags were in
+> scope for *order groceries for the week*. Honestly, **it might be right and my
+> label might be wrong.** I counted it as a miss anyway."
 
-## 3:15–4:20 · The two closing results — this is the part that lands
+## 4:20 – 5:00 · Close
 
-**First: the discretion clause.**
+**Screen:** console → **How it decides**, scroll to *What this is not*.
 
-Show a `clean_unusual` session.
-
-> *"Book a hotel in Chennai... feel free to add breakfast if it seems
-> reasonable."*
-
-> "The agent added breakfast. A keyword matcher flags 'add-on' and is wrong —
-> the human authorised exactly that call. **Zero** false positives across all
-> 25 of these."
-
-**Second: where it actually fails.** Show `clean_mandatory`.
-
-> "These are unavoidable statutory fees. The agent didn't choose them — you
-> can't book the hotel without paying the levy. Flagging one blocks a
-> legitimate purchase.
+> "Gate, tax classifier, semantic verifier, remediation — each stage exists to keep
+> the next one honest, and the expensive one runs last on the smallest input.
 >
-> **8 false positives out of 25 — 32% — ₹20,881 of legitimate spend wrongly
-> held.**
+> This is not production. It has never seen a real transaction, and nothing in it
+> actually executes a payment — remediation decides to partially capture, it doesn't
+> capture. Next would be real API integration, a mandate store, and shadow-mode
+> validation on live traffic.
 >
-> And the interesting part is *how* it fails. It never once flagged 'Airport
-> taxes and statutory fees' — the wording that spells out it's unavoidable.
-> But the identical string 'GST 18%' it accepted once and flagged twice.
-> That's not a knowledge gap about what GST is. It's the absence of a stable
-> policy on mandatory charges — and it showed up on all three models I
-> tested, so it's a property of the task, not one model's quirk.
->
-> The fix isn't a better prompt. Mandatory charges need to be declared as
-> line-item metadata instead of inferred from a description string."
-
-**Do not skip this.** Volunteering your failure mode is the strongest thirty
-seconds in the video.
-
-## 4:20–4:40 · Evidence pack
-
-`uv run warrant evidence <session_id>` on a flagged session.
-
-> "For any flagged purchase: the mandate, the line items, which item was
-> flagged, the reason, and the quote from the intent it was checked against.
-> That's what a merchant needs to defend or explain a charge."
-
-## 4:40–5:00 · Honest close
-
-> "Every number regenerates from one command against a committed seed.
->
-> Two things I'd want you to know before you judge the table. The five
-> gate rows at 100% are a self-test — the generator makes a violation by
-> putting the amount over the cap, and the gate catches it by checking the
-> amount against the cap. That proves there's no bug, not that it's clever.
-> The rows I'd defend are the verifier ones, where nothing is shared.
->
-> And it's entirely synthetic data — because there is no public dataset of
-> AI-agent purchases. The phenomenon barely exists yet. That's the honest
-> limit: I've shown the pipeline works and where it breaks, not that it
-> survives production traffic."
+> What it is: a validated architecture, with one real failure mode found, diagnosed
+> across three models, and closed — and honest measurement of everything that's
+> left."
 
 ---
 
 ## Rules
 
-- Lead with the ₹850 nobody asked for. Not your name, not the track.
-- Say "the model is never in the money path" — once, clearly.
-- Show the false positives. Do not round them away.
-- Run `warrant baseline` on camera. It is the strongest evidence you have.
-- Say the 100% rows are a self-test BEFORE a judge works it out themselves.
-- Never say "100% accurate." Say what was measured and on which class.
-- Read the real table off the screen. Don't recite from memory.
+- **Open on the queue, not on your name.** No title card, no introduction.
+- **Say "it has no tool that moves money"** — once, clearly.
+- **Never say "100% accurate."** Say which rows are self-tests before anyone works it out.
+- **Do not skip the 32% story.** Finding your own failure, proving it across three
+  models, and fixing it with arithmetic instead of prompt-tuning is the single most
+  hireable thing in this project.
+- **Read numbers off the screen**, don't recite from memory.
+- A rough single take beats no video.
+
+## If you only have 90 seconds
+
+The queue → `S-CRP-668092` → partial capture → the GST story. That's the whole
+project.

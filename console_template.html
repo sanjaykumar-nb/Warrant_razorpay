@@ -158,6 +158,7 @@ table.d .b{color:var(--flag);font-weight:600}
   <nav class="rail">
     <div class="brand"><b>Warrant</b><span>operator console</span></div>
     <button type="button" data-v="queue" aria-current="true">Review queue <span class="pill hot" id="qcount">0</span></button>
+    <button type="button" data-v="cleared">Correctly cleared <span class="pill" id="ccount">0</span></button>
     <button type="button" data-v="check">Check a purchase</button>
     <button type="button" data-v="perf">Performance</button>
     <button type="button" data-v="how">How it decides</button>
@@ -178,6 +179,23 @@ table.d .b{color:var(--flag);font-weight:600}
       <div class="split">
         <div class="qlist" id="qlist"></div>
         <div class="detail" id="qdetail"></div>
+      </div>
+    </section>
+
+    <!-- CLEARED -->
+    <section id="v-cleared" class="hidden">
+      <h1>Correctly cleared</h1>
+      <p class="lede">Not flagging a legitimate purchase is as important as catching a bad one — a system that blocks real customers is worse than no system. These are the three cases built specifically to trick it, and it stayed silent on all of them.</p>
+      <dl class="stats">
+        <div><dt>legitimate sessions</dt><dd>180</dd></div>
+        <div><dt>wrongly flagged</dt><dd class="good">0</dd></div>
+        <div><dt>customer money wrongly held</dt><dd class="good">Rs.0</dd></div>
+        <div><dt>keyword baseline would block</dt><dd class="warn">Rs.33,188</dd></div>
+      </dl>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px" id="ctabs"></div>
+      <div class="split">
+        <div class="qlist" id="clist"></div>
+        <div class="detail" id="cdetail"></div>
       </div>
     </section>
 
@@ -303,7 +321,7 @@ const rail = document.querySelector(".rail");
 rail.addEventListener("click", e => {
   const b = e.target.closest("button[data-v]"); if(!b) return;
   [...rail.querySelectorAll("button[data-v]")].forEach(x=>x.setAttribute("aria-current", x===b ? "true":"false"));
-  ["queue","check","perf","how"].forEach(v=>document.getElementById("v-"+v).classList.toggle("hidden", v!==b.dataset.v));
+  ["queue","cleared","check","perf","how"].forEach(v=>document.getElementById("v-"+v).classList.toggle("hidden", v!==b.dataset.v));
 });
 
 /* ---- review queue ---- */
@@ -375,6 +393,56 @@ function renderDetail(q, idx){
   if(rej) rej.addEventListener("click",()=>{resolved.add(idx);renderQueue();});
 }
 renderQueue();
+
+/* ---- correctly cleared ---- */
+const CBUCKETS=[
+  ["taxok","Statutory charge","the line is a tax — excluded by arithmetic, never sent to the model"],
+  ["disc","Discretion granted","the person said “add it if you think it’s worth it”"],
+  ["vague","Vague request","nothing was named, but every item fits what was asked"]
+];
+let cb=CBUCKETS[0][0], ci=0;
+document.getElementById("ccount").textContent =
+  CBUCKETS.reduce((n,[k])=>n+(DATA[k]||[]).length,0);
+
+const ctabs=document.getElementById("ctabs");
+CBUCKETS.forEach(([k,label])=>{
+  const b=document.createElement("button"); b.type="button"; b.dataset.k=k; b.textContent=label;
+  b.style.cssText="font-family:var(--sans);font-size:12.5px;font-weight:600;padding:7px 13px;cursor:pointer;border:1px solid var(--rule2);background:var(--panel);color:var(--ink2)";
+  b.addEventListener("click",()=>{cb=k;ci=0;renderCleared();});
+  ctabs.appendChild(b);
+});
+
+function renderCleared(){
+  [...ctabs.children].forEach(b=>{
+    const on=b.dataset.k===cb;
+    b.style.background = on ? "var(--accent-soft)" : "var(--panel)";
+    b.style.color = on ? "var(--accent)" : "var(--ink2)";
+    b.style.borderColor = on ? "var(--accent)" : "var(--rule2)";
+  });
+  const rows=DATA[cb]||[];
+  const blurb=(CBUCKETS.find(x=>x[0]===cb)||[])[2]||"";
+  const list=document.getElementById("clist"); list.innerHTML="";
+  rows.forEach((q,i)=>{
+    const b=document.createElement("button"); b.type="button";
+    b.setAttribute("aria-current", i===ci?"true":"false");
+    b.innerHTML='<div class="row1"><span class="sid">'+esc(q.id)+'</span>'+
+      '<span class="amt" style="color:var(--clear)">cleared</span></div>'+
+      esc(q.intent.slice(0,52))+(q.intent.length>52?"…":"");
+    b.addEventListener("click",()=>{ci=i;renderCleared();});
+    list.appendChild(b);
+  });
+  const q=rows[ci], d=document.getElementById("cdetail");
+  if(!q){d.innerHTML='<p class="n">Nothing here.</p>';return;}
+  d.innerHTML =
+    '<div class="note" style="margin:0 0 14px">'+esc(blurb)+'</div>'+
+    '<div class="lab">what the person asked for</div>'+
+    '<p class="intent">'+esc(q.intent)+'</p>'+
+    '<div class="lab">what the agent bought at '+esc(q.merchant)+' — total '+rupee(q.total)+'</div>'+
+    '<table class="items"><tbody>'+itemRows(q)+'</tbody></table>'+
+    '<div class="rem"><div class="top"><span class="act full">capture full</span></div>'+
+    '<p>Nothing flagged. Every line item was either what was asked for, or unavoidable.</p></div>';
+}
+renderCleared();
 
 /* ---- live checker ---- */
 const PRESETS=[
