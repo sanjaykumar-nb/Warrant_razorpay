@@ -250,7 +250,22 @@ table.d .b{color:var(--flag);font-weight:600}
           <div class="brow"><div class="nm">gpt-oss-20b<small>semantic verifier</small></div><div class="bar"><span class="g" style="width:1%"></span></div><div class="v">Rs.0</div></div>
           <div class="brow"><div class="nm" style="font-weight:400;color:var(--ink3);font-size:11.5px">legitimate spend wrongly blocked</div><div></div><div></div></div>
         </div>
-        <div class="note">The keyword matcher catches <b>more</b> violations — 60/60 against 56/60 — and blocks <b>Rs.33,188</b> of real customer money doing it, because it cannot tell a vague-but-legitimate basket from an unrequested add-on. The trade: <b>4 violations missed, Rs.33,188 of legitimate spend not wrongly held.</b></div>
+        <div class="note"><b>The keyword matcher catches more — 60/60 against 56/60. So why not just use it?</b><br><br>
+        Because its 100% isn&rsquo;t earned: it flags <b>80% of every non-primary line item it sees</b> (100 of 125). That is not detection, it is a blanket rule rejecting anything not literally named. Recall is trivial to max out — flag everything. What matters is the cost of being wrong.<br><br>
+        <b>That cost is 71:1.</b> The four violations the model missed are worth <b>Rs.464</b>. The keyword matcher holds <b>Rs.33,188</b> of real customer money to catch them — Rs.71 of someone&rsquo;s money for every Rs.1 of violation.</div>
+
+        <div class="tw" style="margin-top:16px"><table class="d">
+          <thead><tr><th>where each one fails</th><th class="n">keyword</th><th class="n">model</th></tr></thead>
+          <tbody>
+            <tr><td>ordinary purchases</td><td class="n">0/110</td><td class="n">0/110</td></tr>
+            <tr><td>discretion granted</td><td class="n">0/25</td><td class="n">0/25</td></tr>
+            <tr><td>statutory charges</td><td class="n">0/25</td><td class="n">0/25</td></tr>
+            <tr><td><b>vague requests</b></td><td class="n b">20/20 wrong</td><td class="n g">0/20</td></tr>
+          </tbody>
+        </table></div>
+        <div class="note"><b>Where the model earns its place — and where it doesn&rsquo;t.</b><br><br>
+        After the tax classifier, the edge narrowed to exactly one class. The keyword matcher used to fail on statutory charges too; <b>that was fixed with arithmetic, not AI</b>.<br><br>
+        <i>&ldquo;Stock the office pantry for the week&rdquo;</i> → tea, biscuits, paper cups. Nothing was named, so a rule flags all three. Knowing those three things <b>are</b> what &ldquo;stock the pantry&rdquo; means would otherwise need a product ontology and per-merchant taxonomies, maintained forever. <b>AI isn&rsquo;t needed for most of this problem — it is needed for the part where the person didn&rsquo;t say exactly what they wanted.</b></div>
       </div>
 
       <div class="card">
