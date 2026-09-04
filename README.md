@@ -44,6 +44,54 @@ Warrant targets the second one. The industry term this project uses for it is **
 
 ---
 
+## Where Warrant sits
+
+Today a person's mandate lives in one system, the line items live in another, and
+**nothing compares them.** The payment rails see a valid card and a real merchant,
+so everything looks fine.
+
+Warrant sits at the **authorise → capture** junction, because that is the one moment
+where both facts exist and the money has not yet moved.
+
+```mermaid
+flowchart TB
+    H["👤 Person<br/><i>'flight to Delhi, under ₹8,000'</i>"]
+    A["🤖 AI shopping agent<br/>picks items, builds the cart"]
+    M["🏪 Merchant<br/>flight ₹7,800 · insurance ₹450 · seat ₹600"]
+
+    AUTH["Authorise<br/><b>funds held, not taken</b>"]
+    W["🛡️ <b>WARRANT</b><br/>compares mandate vs line items<br/>returns a capture decision"]
+    CAP["Capture<br/><b>₹7,800 — not ₹8,850</b>"]
+    SET["Settle to merchant"]
+
+    H -->|"mandate, in their own words"| A
+    A -->|"buys"| M
+    M -->|"payment request"| AUTH
+    AUTH --> W
+    H -.->|"what was asked for"| W
+    M -.->|"what was actually bought"| W
+    W -->|"capture the authorised part only"| CAP
+    CAP --> SET
+
+    style W fill:#DCEDEC,stroke:#0D5F63,stroke-width:3px,color:#101718
+    style AUTH fill:#E2F0E5,stroke:#336D43,color:#101718
+    style CAP fill:#E2F0E5,stroke:#336D43,color:#101718
+    style H fill:#EBEFEE,stroke:#78868A,color:#101718
+    style A fill:#F7EEDC,stroke:#8A5B12,color:#101718
+    style M fill:#F8E6E1,stroke:#A63D26,color:#101718
+    style SET fill:#EBEFEE,stroke:#78868A,color:#101718
+```
+
+**The two dotted lines are the whole idea.** Warrant is the only component that reads
+*both* what the person asked for and what the agent actually bought. Fraud systems see
+the payment but not the intent. The agent knows the intent but is the thing being
+checked. Nobody else is positioned to notice the ₹1,050.
+
+It plugs in as a **pre-capture check for a PSP or a merchant** — it does not sit in the
+authorisation path, so it cannot decline a card or slow a checkout.
+
+---
+
 ## How it works
 
 The core design decision is that **most of this problem isn't an AI problem**, and treating it as one makes the system worse — slower, more expensive, and less reliable. So work is pushed down to the cheapest layer that can correctly handle it, and the model only sees what genuinely needs judgment.
