@@ -8,3 +8,5 @@ dist/
 build/
 .monitor/
 results/real_run.log
+annotations/
+results/_sim_annotations/

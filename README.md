@@ -180,6 +180,8 @@ uv run warrant demo
 | `uv run warrant demo` | full pipeline + every metric above |
 | `uv run warrant baseline` | rule-based baseline vs semantic verifier |
 | `uv run warrant agreement` | inter-model agreement across cached runs |
+| `uv run warrant annotate --name <you>` | label the contested cases yourself, blind |
+| `uv run warrant annotation-report` | inter-annotator agreement vs model vs ground truth |
 | `uv run warrant evidence <session_id>` | evidence pack for one session |
 | `uv run pytest -q` | 48 tests |
 
@@ -258,9 +260,16 @@ A first attempt at a "hard" tier — thematically adjacent add-ons like checked
 baggage on a flight — failed as a difficulty test, scoring 25/25 at confidence
 0.99. Thematic ambiguity is not decision ambiguity.
 
-**No inter-annotator agreement.** A serious benchmark needs multiple humans
-labelling the contested cases and a reported agreement score. This has one
-author's judgment.
+**Inter-annotator agreement is measurable but not yet measured.** The harness
+exists — `warrant annotate` presents the 55 contested cases blind (no ground
+truth, no model verdict, shuffled order, with 6 unambiguous control items to
+detect careless labelling), and `warrant annotation-report` computes pairwise
+Cohen's kappa plus human-vs-model-vs-ground-truth per class. What it needs is
+two or three people to spend twelve minutes each.
+
+This matters more than any other number here: if humans only agree with each
+other 75% of the time on mandatory fees, then the model's 68% is not a failure
+— the ceiling on a contested task is human agreement, not 100%.
 
 **Findings carry a confidence score that nothing consumes.** Every finding is
 treated alike; a real system would auto-block high-confidence cases and queue

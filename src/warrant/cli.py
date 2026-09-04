@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from warrant.annotate import build_items, load_annotations, report, run_session
 from warrant.baseline import inter_model_agreement, print_comparison, summarise
 from warrant.evidence import build_evidence_pack
 from warrant.gate import gate_verdict, run_gate
@@ -29,6 +30,8 @@ from warrant.verifier import HeuristicVerifier, get_verifier
 RESULTS_DIR = DATA_PATH.parent.parent / "results"
 FINDINGS_CACHE = RESULTS_DIR / "findings.json"
 VERIFIER_CACHE = RESULTS_DIR / "verifier_cache.json"
+ANNOTATIONS_DIR = RESULTS_DIR.parent / "annotations"
+ANNOTATION_SEED = 4242
 
 
 def _load_or_generate() -> list[Session]:
@@ -123,6 +126,32 @@ def cmd_agreement(_args: argparse.Namespace) -> None:
     print(inter_model_agreement(RESULTS_DIR, by_id))
 
 
+
+def _annotation_items():
+    from warrant.generate import SEED
+    return build_items(_load_or_generate(), seed=ANNOTATION_SEED)
+
+
+def cmd_annotate(args: argparse.Namespace) -> None:
+    items = _annotation_items()
+    out = ANNOTATIONS_DIR / f"{args.name}.json"
+    run_session(items, args.name, out)
+
+
+def cmd_annotation_report(_args: argparse.Namespace) -> None:
+    sessions = _load_or_generate()
+    by_id = {s.session_id: s for s in sessions}
+    items = _annotation_items()
+
+    model_flagged: set[str] = set()
+    if FINDINGS_CACHE.exists():
+        for f in json.loads(FINDINGS_CACHE.read_text(encoding="utf-8")):
+            if f.get("detected_by") == "verifier":
+                model_flagged.add(f["session_id"])
+
+    print(report(load_annotations(ANNOTATIONS_DIR), items, by_id, model_flagged))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="warrant")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -132,6 +161,13 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("demo", help="run the full pipeline and print every metric").set_defaults(func=cmd_demo)
     sub.add_parser("baseline", help="compare the rule-based baseline against the semantic verifier").set_defaults(func=cmd_baseline)
     sub.add_parser("agreement", help="inter-model agreement across cached runs").set_defaults(func=cmd_agreement)
+
+    ann = sub.add_parser("annotate", help="label the contested cases yourself (blind to ground truth)")
+    ann.add_argument("--name", required=True, help="annotator name, e.g. your first name")
+    ann.set_defaults(func=cmd_annotate)
+
+    sub.add_parser("annotation-report",
+                   help="inter-annotator agreement + human vs model vs ground truth").set_defaults(func=cmd_annotation_report)
 
     ev = sub.add_parser("evidence", help="print the evidence pack for one session")
     ev.add_argument("session_id")
