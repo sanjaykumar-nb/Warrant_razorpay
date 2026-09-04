@@ -8,6 +8,7 @@ knowable by running against the live API. Treat green tests here as
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -19,6 +20,7 @@ from warrant.verifier import (
     SYSTEM_PROMPT,
     VERIFIER_TOOL_SCHEMA,
     GeminiVerifier,
+    GroqVerifier,
     HeuristicVerifier,
     LLMVerifier,
     _build_user_message,
@@ -163,6 +165,7 @@ def test_tool_schema_name_matches_forced_tool_choice():
 
 
 def test_get_verifier_falls_back_to_heuristic_without_any_key(monkeypatch, capsys):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     verifier = get_verifier()
@@ -173,6 +176,7 @@ def test_get_verifier_falls_back_to_heuristic_without_any_key(monkeypatch, capsy
 
 
 def test_get_verifier_returns_llm_verifier_with_only_anthropic_key(monkeypatch):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-not-real")
     verifier = get_verifier()
@@ -180,6 +184,7 @@ def test_get_verifier_returns_llm_verifier_with_only_anthropic_key(monkeypatch):
 
 
 def test_get_verifier_prefers_gemini_when_both_keys_present(monkeypatch):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
     monkeypatch.setenv("GEMINI_API_KEY", "test-not-real")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-not-real")
     verifier = get_verifier()
@@ -264,3 +269,117 @@ def test_gemini_gives_up_after_max_retries(monkeypatch, clean_session):
     monkeypatch.setattr(verifier._client.models, "generate_content", always_fails)
     with pytest.raises(RuntimeError, match="persistent failure"):
         verifier.verify(clean_session)
+
+
+# --- GroqVerifier: mocked, no network, no key ------------------------------
+# This is the provider the submission's reported numbers come from, so it
+# gets the same coverage as the other two.
+
+def _fake_groq_response(findings: list[dict], prompt_tokens: int = 700, completion_tokens: int = 120):
+    """Duck-typed stand-in for a Groq chat-completion. Note the arguments
+    field is a JSON *string* (OpenAI-compatible), not a dict — that
+    difference from the Anthropic/Gemini shape is exactly what this
+    verifier's parsing has to get right."""
+    function = SimpleNamespace(name="report_scope_creep", arguments=json.dumps({"findings": findings}))
+    tool_call = SimpleNamespace(function=function)
+    message = SimpleNamespace(tool_calls=[tool_call])
+    choice = SimpleNamespace(message=message)
+    usage = SimpleNamespace(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+    return SimpleNamespace(choices=[choice], usage=usage)
+
+
+def _mocked_groq_verifier(monkeypatch, response) -> GroqVerifier:
+    verifier = GroqVerifier(api_key="gsk_test-not-real")
+    monkeypatch.setattr(verifier._client.chat.completions, "create", lambda **kwargs: response)
+    return verifier
+
+
+def test_groq_parses_json_string_arguments_into_findings(monkeypatch, scope_creep_session):
+    addon_sku = scope_creep_session.line_items[1].sku
+    response = _fake_groq_response([
+        {"offending_sku": addon_sku, "reason": "Not covered by the intent.", "supporting_quote": None, "confidence": 0.91}
+    ])
+    verifier = _mocked_groq_verifier(monkeypatch, response)
+    result = verifier.verify(scope_creep_session)
+
+    assert len(result.findings) == 1
+    f = result.findings[0]
+    assert f.session_id == scope_creep_session.session_id
+    assert f.violation == ViolationClass.SCOPE_CREEP
+    assert f.detected_by == "verifier"
+    assert f.offending_items == [addon_sku]
+    assert f.confidence == pytest.approx(0.91)
+
+
+def test_groq_empty_findings_when_model_reports_nothing(monkeypatch, clean_session):
+    verifier = _mocked_groq_verifier(monkeypatch, _fake_groq_response([]))
+    result = verifier.verify(clean_session)
+    assert result.findings == []
+
+
+def test_groq_cost_computed_from_usage(monkeypatch, clean_session):
+    response = _fake_groq_response([], prompt_tokens=642, completion_tokens=88)
+    verifier = _mocked_groq_verifier(monkeypatch, response)
+    result = verifier.verify(clean_session)
+    assert result.input_tokens == 642
+    assert result.output_tokens == 88
+    assert result.cost_paise == cost_paise(642, 88)
+
+
+def test_groq_sends_forced_tool_choice_and_correct_model(monkeypatch, clean_session):
+    captured = {}
+
+    def fake_create(**kwargs):
+        captured.update(kwargs)
+        return _fake_groq_response([])
+
+    verifier = GroqVerifier(api_key="gsk_test-not-real")
+    monkeypatch.setattr(verifier._client.chat.completions, "create", fake_create)
+    verifier.verify(clean_session)
+
+    assert captured["model"] == GroqVerifier.MODEL
+    assert captured["tool_choice"] == {"type": "function", "function": {"name": "report_scope_creep"}}
+    assert captured["tools"][0]["function"]["name"] == "report_scope_creep"
+    assert captured["messages"][0]["role"] == "system"
+    assert captured["messages"][0]["content"] == SYSTEM_PROMPT
+
+
+def test_groq_retries_on_transient_error_then_succeeds(monkeypatch, clean_session):
+    monkeypatch.setattr("warrant.verifier.time.sleep", lambda _seconds: None)
+    calls = {"n": 0}
+
+    def flaky(**kwargs):
+        calls["n"] += 1
+        if calls["n"] < 3:
+            raise RuntimeError("429 rate limit reached")
+        return _fake_groq_response([])
+
+    verifier = GroqVerifier(api_key="gsk_test-not-real")
+    monkeypatch.setattr(verifier._client.chat.completions, "create", flaky)
+    result = verifier.verify(clean_session)
+    assert calls["n"] == 3
+    assert result.findings == []
+
+
+def test_groq_does_not_retry_on_permission_denied(monkeypatch, clean_session):
+    """403 means account-level denial — retrying wastes a minute of backoff
+    on something that cannot succeed. It must fail on the first attempt."""
+    monkeypatch.setattr("warrant.verifier.time.sleep", lambda _seconds: None)
+    calls = {"n": 0}
+
+    def denied(**kwargs):
+        calls["n"] += 1
+        raise RuntimeError("403 PERMISSION_DENIED")
+
+    verifier = GroqVerifier(api_key="gsk_test-not-real")
+    monkeypatch.setattr(verifier._client.chat.completions, "create", denied)
+    with pytest.raises(RuntimeError, match="PERMISSION_DENIED"):
+        verifier.verify(clean_session)
+    assert calls["n"] == 1, "403 should fail immediately, not burn retries"
+
+
+def test_get_verifier_prefers_groq_over_everything(monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_test-not-real")
+    monkeypatch.setenv("GEMINI_API_KEY", "test-not-real")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-not-real")
+    assert isinstance(get_verifier(), GroqVerifier)

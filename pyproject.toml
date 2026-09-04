@@ -8,6 +8,8 @@ dependencies = [
     "anthropic>=0.40",
     "rich>=13.9",
     "google-genai>=2.22.0",
+    "groq>=1.7.0",
+    "python-dotenv>=1.0",
 ]
 
 [project.scripts]

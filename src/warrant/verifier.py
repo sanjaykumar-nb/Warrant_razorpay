@@ -174,7 +174,12 @@ class GeminiVerifier:
     so cost_paise is genuinely 0 for this project, not just untracked."""
 
     name = "gemini"
-    MODEL = "gemini-3-flash"
+    # Confirmed against this key's actual model list on 3 Sep 2026 via
+    # client.models.list() — "gemini-3-flash" (the marketing name) is not
+    # a real model id; this is the free-tier-eligible non-preview flash
+    # model, and its 15 req/min cap beats plain Flash's 10 req/min for
+    # a rate-limited batch this size.
+    MODEL = "gemini-3.1-flash-lite"
     MAX_RETRIES = 4
 
     def __init__(self, api_key: str) -> None:
@@ -229,7 +234,14 @@ class GeminiVerifier:
     def _call_with_retry(self, session: Session, config):
         """Free-tier Gemini Flash is capped at 10 requests/minute. With 170
         calls in a batch, transient 429s are expected, not exceptional —
-        back off and retry rather than letting the whole run die on one."""
+        back off and retry rather than letting the whole run die on one.
+
+        403 PERMISSION_DENIED raises immediately rather than retrying: it
+        signals account-level denial, so backing off 4 times cannot help.
+        Note this fails the run rather than falling back to another
+        provider — get_verifier() selects one provider up front and does
+        not reconsider. Failing loudly is deliberate: a silent downgrade
+        to a weaker verifier mid-run would corrupt the reported metrics."""
         last_error: Exception | None = None
         for attempt in range(self.MAX_RETRIES):
             try:
@@ -240,8 +252,100 @@ class GeminiVerifier:
                 )
             except Exception as e:  # noqa: BLE001 — SDK exception types vary by transport
                 last_error = e
+                error_str = str(e)
+                if "403" in error_str or "PERMISSION_DENIED" in error_str:
+                    raise
                 if attempt < self.MAX_RETRIES - 1:
                     time.sleep(8 * (attempt + 1))
+        raise last_error
+
+
+class GroqVerifier:
+    """Same prompt, same tool schema, same Finding shape as LLMVerifier —
+    only the transport differs. OpenAI-compatible chat-completions API
+    with forced tool calling. Groq's free tier has no credits system and
+    no per-token charge, but is capped at 6,000 tokens/minute at the org
+    level (confirmed 3 Sep 2026) — tighter than Gemini's cap, so retry
+    backoff matters even more here."""
+
+    name = "groq"
+    # Chosen by measurement, not assumption: qwen3.8-27b, gpt-oss-120b and
+    # qwen3.6-27b all scored 10/10 on a discriminating sample (5 scope_creep
+    # + 5 clean_unusual), so the tiebreak was token efficiency against the
+    # 6k tokens/min free cap. qwen3.6-27b burned ~1430 tok/call on verbose
+    # reasoning; this one is the largest available model at ~730 tok/call.
+    MODEL = "openai/gpt-oss-120b"
+    MAX_RETRIES = 5
+
+    def __init__(self, api_key: str) -> None:
+        from groq import Groq  # lazy import: other verifier paths don't need this SDK
+        self._client = Groq(api_key=api_key)
+
+    def verify(self, session: Session) -> VerifyResult:
+        import json
+
+        tool = {
+            "type": "function",
+            "function": {
+                "name": VERIFIER_TOOL_SCHEMA["name"],
+                "description": VERIFIER_TOOL_SCHEMA["description"],
+                "parameters": VERIFIER_TOOL_SCHEMA["input_schema"],
+            },
+        }
+        response = self._call_with_retry(session, tool)
+
+        message = response.choices[0].message
+        tool_call = message.tool_calls[0]
+        args = json.loads(tool_call.function.arguments)
+        parsed = _LLMOutput.model_validate(args)
+
+        findings = [
+            Finding(
+                session_id=session.session_id,
+                violation=ViolationClass.SCOPE_CREEP,
+                detected_by="verifier",
+                confidence=f.confidence,
+                reason=f.reason,
+                offending_items=[f.offending_sku],
+                supporting_quote=f.supporting_quote,
+            )
+            for f in parsed.findings
+        ]
+        return VerifyResult(
+            findings=findings,
+            input_tokens=response.usage.prompt_tokens,
+            output_tokens=response.usage.completion_tokens,
+        )
+
+    def _call_with_retry(self, session: Session, tool: dict):
+        """6,000 tokens/minute at the org level means 429s are the expected
+        steady state for a 170-call batch, not an edge case.
+
+        403 PERMISSION_DENIED raises immediately rather than retrying: it
+        signals account-level denial, so backing off cannot help. This
+        fails the run rather than falling back to another provider —
+        get_verifier() selects one provider up front and does not
+        reconsider. Failing loudly is deliberate: a silent downgrade to a
+        weaker verifier mid-run would corrupt the reported metrics."""
+        last_error: Exception | None = None
+        for attempt in range(self.MAX_RETRIES):
+            try:
+                return self._client.chat.completions.create(
+                    model=self.MODEL,
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": _build_user_message(session)},
+                    ],
+                    tools=[tool],
+                    tool_choice={"type": "function", "function": {"name": VERIFIER_TOOL_SCHEMA["name"]}},
+                )
+            except Exception as e:  # noqa: BLE001 — SDK exception types vary by transport
+                last_error = e
+                error_str = str(e)
+                if "403" in error_str or "PERMISSION_DENIED" in error_str:
+                    raise
+                if attempt < self.MAX_RETRIES - 1:
+                    time.sleep(12 * (attempt + 1))
         raise last_error
 
 
@@ -279,8 +383,14 @@ class HeuristicVerifier:
 
 
 def get_verifier() -> Verifier:
-    """Preference order: Gemini (free tier, what this submission's numbers
-    come from) -> Anthropic (if credit is available) -> heuristic fallback."""
+    """Preference order: Groq (free tier, what this submission's numbers
+    actually come from — Gemini's free tier hit an account-level 403 on
+    this project, unrelated to this code) -> Gemini (retry if that gets
+    resolved) -> Anthropic (if credit is available) -> heuristic fallback."""
+    groq_key = os.environ.get("GROQ_API_KEY")
+    if groq_key:
+        return GroqVerifier(api_key=groq_key)
+
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if gemini_key:
         return GeminiVerifier(api_key=gemini_key)
@@ -289,11 +399,12 @@ def get_verifier() -> Verifier:
     if api_key:
         return LLMVerifier(api_key=api_key, workspace_id=os.environ.get("ANTHROPIC_WORKSPACE_ID"))
 
+    # No API keys configured - return heuristic with warning
     print(
         "\n"
-        "!! WARNING: no GEMINI_API_KEY or ANTHROPIC_API_KEY set.                !!\n"
+        "!! WARNING: no GROQ_API_KEY, GEMINI_API_KEY, or ANTHROPIC_API_KEY set.  !!\n"
         "!! Falling back to HeuristicVerifier — development placeholder only.   !!\n"
         "!! It does NOT use a language model; its numbers must NOT be reported. !!\n"
-        "!! Set GEMINI_API_KEY (free) and re-run before recording any metric.   !!\n"
+        "!! Set GROQ_API_KEY (free) and re-run before recording any metric.     !!\n"
     )
     return HeuristicVerifier()

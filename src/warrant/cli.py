@@ -2,9 +2,9 @@
 
 `uv run warrant gate`     — deterministic checks only. No API key, no cost.
 `uv run warrant demo`     — full pipeline: gate, then verifier on the
-                             residual. Prints every metric and caches
-                             results to results/ so `evidence` doesn't
-                             need to re-run (and re-pay for) the verifier.
+                              residual. Prints every metric and caches
+                              results to results/ so `evidence` doesn't
+                              need to re-run (and re-pay for) the verifier.
 `uv run warrant evidence <session_id>` — the evidence pack for one session.
 """
 
@@ -13,6 +13,10 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from warrant.evidence import build_evidence_pack
 from warrant.gate import gate_verdict, run_gate

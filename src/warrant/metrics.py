@@ -120,8 +120,8 @@ def print_report(result: PipelineResult) -> None:
     print(f"Gate findings:         {len(result.gate_findings)}")
     print(f"Verifier calls:        {result.verifier_calls}  ({pct_never_touching_model(result):.0%} never touched the model)")
     print(f"Gate latency:          p50={result.gate_p50_ms:.4f}ms  p99={result.gate_p99_ms:.4f}ms")
-    print(f"Verifier cost:         ₹{result.verifier_cost_paise / 100:,.2f}  "
-          f"(₹{result.verifier_cost_paise / total / 100:.4f} / session, amortised over full batch)")
+    print(f"Verifier cost:         Rs.{result.verifier_cost_paise / 100:,.2f}  "
+          f"(Rs.{result.verifier_cost_paise / total / 100:.4f} / session, amortised over full batch)")
     print()
 
     print(f"{'class':<18}{'total':>7}{'caught':>8}{'recall':>9}{'fp':>6}")
@@ -133,4 +133,4 @@ def print_report(result: PipelineResult) -> None:
 
     fp_paise = false_positive_cost_paise(result)
     fp_n = false_positive_count(result)
-    print(f"False positives:       {fp_n} sessions, ₹{fp_paise / 100:,.2f} of legitimate spend wrongly flagged")
+    print(f"False positives:       {fp_n} sessions, Rs.{fp_paise / 100:,.2f} of legitimate spend wrongly flagged")
